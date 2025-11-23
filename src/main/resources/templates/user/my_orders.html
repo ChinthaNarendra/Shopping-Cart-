@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <section>
+    <div class="container mt-5 p-5">
+      <div class="row">
+        <p class="text-center fs-3">My Orders</p>
+
+        <th:block th:if="${succMsg}">
+          <div class="text-success text-center fa-bold" th:text="${succMsg}"></div>
+        </th:block>
+
+        <th:block th:if="${errorMsg}">
+          <div class="text-danger text-center fa-bold" th:text="${errorMsg}"></div>
+        </th:block>
+
+        <div class="col-md-12">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Order Id</th>
+                <th>Date</th>
+                <th>Product Details</th>
+                <th>Price Details</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody th:if="${orders != null and !orders.isEmpty()}">
+              <tr th:each="o : ${orders}">
+                <!-- show either DB id or business order id depending on your model -->
+                <th scope="row" th:text="${o.orderId != null ? o.orderId : o.id}">ORDER_ID</th>
+
+                <td th:text="${o.orderDate != null ? #dates.format(o.orderDate, 'dd-MMM-yyyy') : '-'}">DATE</td>
+
+                <td th:text="${o.product != null ? o.product.title : '—'}">PRODUCT</td>
+
+                <td>
+                  Quantity: <span th:text="${o.quantity != null ? o.quantity : 0}">0</span><br/>
+                  Price: ₹<span th:text="${o.price != null ? o.price : 0}">0</span><br/>
+                  Total: ₹<span th:text="${(o.price != null ? o.price : 0) * (o.quantity != null ? o.quantity : 0)}">0</span>
+                </td>
+
+                <td th:text="${o.status}">STATUS</td>
+
+                <td>
+                  <!-- PREFERRED: POST form to change status (CSRF-safe) -->
+                  <form th:action="@{/user/update-status}" method="post" style="display:inline;">
+                    <input type="hidden" name="id" th:value="${o.id}" />
+                    <!-- example of cancelling: st=6 (map to your OrderStatus id) -->
+                    <input type="hidden" name="st" value="6" />
+                    <button type="submit" class="btn btn-sm btn-danger"
+                      th:disabled="${o.status == 'Cancelled' or o.status == 'Delivered'}">
+                      Cancel
+                    </button>
+                  </form>
+
+                  <!-- If you still want a GET link (not recommended for state changes), corrected syntax: -->
+                  <!--
+                  <a th:href="@{/user/update-status(id=${o.id}, st=6)}" class="btn btn-sm btn-danger">Cancel (GET)</a>
+                  -->
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody th:unless="${orders != null and !orders.isEmpty()}">
+              <tr>
+                <td colspan="6" class="text-center">You have no orders yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

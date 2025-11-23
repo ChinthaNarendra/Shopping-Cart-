@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Admin</title>
+  <style>
+    @media (min-width: 768px) {
+      .register-card { min-height: 520px; }
+    }
+    .input-error { color: #b91c1c; font-size: 0.9rem; margin-top: 0.35rem; }
+    .card-header .header-msg { margin-top: 0.6rem; margin-left: 1rem; display:inline-block; font-weight:600; }
+  </style>
+</head>
+
+<body>
+<section>
+  <div class="container mt-4 p-5">
+    <div class="row align-items-center">
+      <div class="col-md-6 p-2 offset-md-3">
+        <div class="card shadow p-3 mb-5 bg-body-tertiary rounded register-card">
+
+          <div class="card-header text-center">
+            <p class="fs-4 text-center mb-0">Add Admin</p>
+            <div class="header-msg">
+              <th:block th:if="${succMsg}"><span class="text-success" th:text="${succMsg}"></span></th:block>
+              <th:block th:if="${errorMsg}"><span class="text-danger" th:text="${errorMsg}"></span></th:block>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div id="clientMsg" role="alert" style="display:none;"></div>
+
+            <form id="registerForm"
+                  th:action="@{/admin/save-admin}"
+                  th:object="${user}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+              <!-- If using Spring Security, enable CSRF -->
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label for="name" class="form-label">Full Name</label>
+                  <input id="name" class="form-control" th:field="*{name}" type="text" required />
+                </div>
+                <div class="col">
+                  <label for="mobileNumber" class="form-label">Mobile Number</label>
+                  <input id="mobileNumber" class="form-control" th:field="*{mobileNumber}" type="tel"
+                         pattern="[0-9]{10}" maxlength="10" required title="Enter 10 digit mobile number" />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" class="form-control" th:field="*{email}" type="email" required />
+              </div>
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label for="address" class="form-label">Address</label>
+                  <input id="address" class="form-control" th:field="*{address}" type="text" required />
+                </div>
+                <div class="col">
+                  <label for="city" class="form-label">City</label>
+                  <input id="city" class="form-control" th:field="*{city}" type="text" required />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label for="state" class="form-label">State</label>
+                  <input id="state" class="form-control" th:field="*{state}" type="text" required />
+                </div>
+                <div class="col">
+                  <label for="pincode" class="form-label">Pincode</label>
+                  <input id="pincode" class="form-control" th:field="*{pinCode}" type="number" required />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label for="password" class="form-label">Password</label>
+                  <input id="password" class="form-control" th:field="*{password}" type="password" minlength="6" required />
+                  <div id="pwError" class="input-error" style="display:none;">Passwords do not match.</div>
+                </div>
+
+                <div class="col">
+                  <label for="cpassword" class="form-label">Confirm Password</label>
+                  <input id="cpassword" class="form-control" name="cpassword" type="password" minlength="6" required />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="img" class="form-label">Profile</label>
+                <input id="img" class="form-control" name="img" type="file" accept="image/*" required />
+                <div id="fileError" class="input-error" style="display:none;"></div>
+                <div class="form-text">Max file size: 5 MB. Allowed: jpg, png, webp, gif.</div>
+              </div>
+
+              <button type="submit" class="btn bg-primary text-white col-md-12">Register</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+  const form = document.getElementById('registerForm');
+  const fileInput = document.getElementById('img');
+  const fileError = document.getElementById('fileError');
+  const clientMsg = document.getElementById('clientMsg');
+  const pw = document.getElementById('password');
+  const cpw = document.getElementById('cpassword');
+  const pwError = document.getElementById('pwError');
+
+  function showClientMessage(text, type = 'danger') {
+    clientMsg.style.display = 'block';
+    clientMsg.className = '';
+    clientMsg.classList.add('alert', type === 'success' ? 'alert-success' : 'alert-danger');
+    clientMsg.innerText = text;
+  }
+
+  function clearClientMessage() {
+    clientMsg.style.display = 'none';
+    clientMsg.innerText = '';
+    clientMsg.className = '';
+  }
+
+  form.addEventListener('submit', function(e) {
+    clearClientMessage();
+    fileError.style.display = 'none';
+    pwError.style.display = 'none';
+
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+      showClientMessage('Please fill all required fields correctly.', 'danger');
+      return;
+    }
+
+    if (pw.value !== cpw.value) {
+      e.preventDefault();
+      pwError.style.display = 'block';
+      showClientMessage('Passwords do not match. Please check again.', 'danger');
+      pw.focus();
+      return;
+    }
+
+    const file = fileInput.files && fileInput.files[0];
+    if (file) {
+      if (file.size > MAX_BYTES) {
+        e.preventDefault();
+        fileError.style.display = 'block';
+        fileError.innerText = 'File too large (max 5 MB).';
+        showClientMessage('Please choose a smaller image (<5 MB).', 'danger');
+        fileInput.focus();
+        return;
+      }
+      const allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+      if (allowed.indexOf(file.type) === -1) {
+        e.preventDefault();
+        fileError.style.display = 'block';
+        fileError.innerText = 'Invalid file type. Use jpg, png, webp, or gif.';
+        showClientMessage('Invalid file type selected.', 'danger');
+        fileInput.focus();
+        return;
+      }
+    }
+  });
+
+  fileInput.addEventListener('change', function() {
+    fileError.style.display = 'none';
+    clearClientMessage();
+    const f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    if (f.size > MAX_BYTES) {
+      fileError.style.display = 'block';
+      fileError.innerText = 'Selected file is too large (max 5 MB).';
+      showClientMessage('Selected file is too large. Please choose a smaller image.', 'danger');
+    }
+  });
+})();
+</script>
+</body>
+</html>

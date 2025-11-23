@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Login</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+
+<body>
+	<section>
+		<div class="container mt-5 p-5">
+			<form th:action="@{/user/save-order}" method="post">
+				<div class="row">
+
+					<div class="col-md-6 ">
+
+						<div class="mb-4 row">
+							<p class="text-center fs-2">Billing Address</p>
+							<hr>
+							<div class="col">
+								<label>First Name</label>
+								<input type="text" name="firstName" placeholder="First name" class="form-control"
+									required>
+							</div>
+							<div class="col">
+								<label>Last Name</label>
+								<input type="text" name="lastName" placeholder="Last name" class="form-control ms-2"
+									required>
+							</div>
+						</div>
+
+						<div class="mb-4 row">
+							<div class="col">
+								<label>Email</label>
+								<input type="email" name="email" placeholder="Email" class="form-control" required>
+							</div>
+							<div class="col">
+								<label>Mobile</label>
+								<input type="text" name="mobileNo" placeholder="Mobile Number" class="form-control ms-2"
+									required>
+							</div>
+						</div>
+
+						<div class="mb-4 row">
+							<div class="col">
+								<label>Address</label>
+								<input type="text" name="address" placeholder="Address" class="form-control" required>
+							</div>
+							<div class="col">
+								<label>City</label>
+								<input type="text" name="city" placeholder="City" class="form-control ms-2" required>
+							</div>
+						</div>
+
+						<div class="mb-4 row">
+							<div class="col">
+								<label>State</label>
+								<input type="text" name="state" placeholder="State" class="form-control" required>
+							</div>
+							<div class="col">
+								<label>Pin Code</label>
+								<input type="number" name="pincode" placeholder="Pin Code" class="form-control ms-2"
+									required>
+							</div>
+						</div>
+						<!--</form>-->
+
+
+
+					</div>
+
+					<div class="col-md-6">
+						<p class="text-center fs-2">Payment Type</p>
+						<hr>
+						<div class="card">
+							<div class="card-body">
+								<table class="table table-borderless">
+									<tbody>
+										<tr>
+											<td>Total Price</td>
+											<td>:</td>
+											<td>&#8377; [[${orderPrice}]]</td>
+										</tr>
+
+										<tr>
+											<td>Delivery Fee</td>
+											<td>:</td>
+											<td>&#8377; 100</td>
+										</tr>
+
+										<tr>
+											<td>Tax</td>
+											<td>:</td>
+											<td>&#8377; 50</td>
+										</tr>
+
+										<tr class="border-top">
+											<td>Total Price</td>
+											<td>:</td>
+											<td>&#8377; [[${totalOrderPrice}]]</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<div class="card shadow p-3 mb-5 mt-2 bg-body-tertiary rounded">
+
+
+							<div class="card-body">
+
+								<!--<form th:action="@{/login}" method="post">-->
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+								<div class="mb-3">
+									<label class="form-label">Select Payment Type</label>
+									<select name="paymentType" class="form-control" required>
+										<option value="" disabled selected hidden>--select--</option>
+										<option value="COD">Cash On Delivery</option>
+										<option value="ONLINE">Online Payment</option>
+									</select>
+								</div>
+
+
+								<button class="btn bg-primary text-white col-md-12">Place Order</button>
+								<!--</form>-->
+							</div>
+
+
+						</div>
+					</div>
+
+				</div>
+			</form>
+		</div>
+	</section>
+</body>
+
+</html>

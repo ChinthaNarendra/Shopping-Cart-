@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="ISO-8859-1">
+	<title>Cart Page</title>
+</head>
+
+<body>
+	<section>
+		<div class="container-fluid mt-5 p-5">
+			<div class="card card-sh">
+				<div class="card-header text-center">
+					<p class="fs-4">Cart Page</p>
+				</div>
+
+				<div class="card-body">
+					<!-- Success / Error messages -->
+					<th:block th:if="${succMsg}">
+						<div class="alert alert-success text-center fw-bold" th:text="${succMsg}"></div>
+					</th:block>
+
+					<th:block th:if="${errorMsg}">
+						<div class="alert alert-danger text-center fw-bold" th:text="${errorMsg}"></div>
+					</th:block>
+
+					<table class="table align-middle table-bordered">
+						<thead class="table-light">
+							<tr>
+								<th scope="col">Sl No</th>
+								<th scope="col">Image</th>
+								<th scope="col">Product Name</th>
+								<th scope="col">Price</th>
+								<th scope="col" class="text-center">Quantity</th>
+								<th scope="col">Total Price</th>
+								<th scope="col" class="text-center">Actions</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<!-- Loop through all carts -->
+							<tr th:each="cart, stat : ${carts}">
+								<th scope="row" th:text="${stat.count}">1</th>
+
+								<td class="text-center">
+									<img th:src="${cart.product.image != null} ?
+                                              @{/uploads/product_img/{img}(img=${cart.product.image})} :
+                                              @{/uploads/product_img/default.jpg}"
+										th:alt="${cart.product.title}" width="60" height="60"
+										style="object-fit:cover; border-radius:6px;" />
+								</td>
+
+								<td th:text="${cart.product.title}">Product title</td>
+
+								<!-- Show discountPrice if present, otherwise show regular price -->
+								<td
+									th:text="${cart.product.discountPrice != null ? cart.product.discountPrice : cart.product.price}">
+									0.00
+								</td>
+
+								<!-- Quantity with decrement / increment buttons -->
+								<td class="text-center">
+									<div class="d-flex justify-content-center align-items-center gap-2">
+										<!-- Decrement: call controller to decrease quantity -->
+										<a th:href="@{/user/cartQuantityUpdate(sy='de', cid=${cart.id})}"
+											class="btn btn-sm btn-outline-secondary" title="Decrease">
+											<i class="fa-solid fa-minus"></i>
+										</a>
+
+										<!-- Quantity display -->
+										<span th:text="${cart.quantity}">0</span>
+
+										<!-- Increment: call controller to increase quantity -->
+										<a th:href="@{/user/cartQuantityUpdate(sy='in', cid=${cart.id})}"
+											class="btn btn-sm btn-outline-secondary" title="Increase">
+											<i class="fa-solid fa-plus"></i>
+										</a>
+									</div>
+								</td>
+
+								<!-- totalPrice (computed by service) -->
+								<td th:text="${cart.totalPrice}">0.00</td>
+
+								<!-- Action buttons aligned side-by-side -->
+								<td class="text-center">
+									<div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
+										<a th:href="@{'/product/' + ${cart.product.id}}"
+											class="btn btn-sm btn-primary d-flex align-items-center">
+											<i class="fa-solid fa-eye me-1"></i> View
+										</a>
+									</div>
+								</td>
+							</tr>
+
+							<!-- Total row -->
+							<tr th:if="${!#lists.isEmpty(carts)}">
+								<td colspan="4"></td>
+								<td class="fw-bold">Total Price</td>
+								<td class="fw-bold">&#8377; <span th:text="${totalOrderPrice}">0.00</span></td>
+								<td></td>
+							</tr>
+
+							<!-- If no carts found -->
+							<tr th:if="${#lists.isEmpty(carts)}">
+								<td colspan="7" class="text-center text-muted">No products found.</td>
+							</tr>
+
+						</tbody>
+					</table>
+					<div class="text-center">
+						<tr th:if="${!#lists.isEmpty(carts)}">
+							<td colspan="4"></td>
+							<td colspan="3" class="text-end">
+								<a th:href="@{/user/orders}" class="btn btn-warning">Proceed to Pay</a>
+							</td>
+						</tr>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Auto-hide flash messages -->
+	<script th:inline="javascript">
+		setTimeout(function () {
+			var alerts = document.querySelectorAll('.alert');
+			alerts.forEach(function (a) {a.style.display = 'none';});
+		}, 3000);
+	</script>
+</body>
+
+</html>

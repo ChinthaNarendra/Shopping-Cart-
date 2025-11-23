@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>My Profile</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+
+<body>
+	<section>
+		<div class="container mt-5 p-5 bg-light">
+			<div class="row">
+				<div class="col-md-10 offset-md-1">
+
+					<p class="fs-3 text-center">My Profile</p>
+					<hr />
+
+
+
+
+					<!-- Profile Image -->
+					<!-- Profile Image (replace your existing img block with this) -->
+					<div class="text-center mb-3">
+						<th:block th:if="${user.profileImage != null and user.profileImage != ''}">
+							<!-- If DB already contains "profile_img/" use it as-is -->
+							<img th:if="${#strings.contains(user.profileImage,'profile_img/')}"
+								th:src="@{/uploads/{file}(file=${user.profileImage})}" th:alt="${user.name}"
+								class="border p-2" style="width:110px; height:110px; border-radius:50%;" />
+
+							<!-- Otherwise prefix profile_img/ -->
+							<img th:unless="${#strings.contains(user.profileImage,'profile_img/')}"
+								th:src="@{/uploads/profile_img/{img}(img=${user.profileImage})}" th:alt="${user.name}"
+								class="border p-2" style="width:110px; height:110px; border-radius:50%;" />
+						</th:block>
+
+						<!-- Default image when no profileImage -->
+						<img th:if="${user.profileImage == null or user.profileImage == ''}"
+							th:src="@{/uploads/profile_img/default.jpg}" alt="Profile" class="border p-2"
+							style="width:110px; height:110px; border-radius:50%;" />
+					</div>
+
+
+					<!-- Flash messages -->
+					<div th:if="${succMsg}" class="text-success text-center" th:text="${succMsg}"></div>
+					<div th:if="${errorMsg}" class="text-danger text-center" th:text="${errorMsg}"></div>
+
+					<!-- Profile Update Form -->
+					<div class="col-md-8 offset-md-2 mt-4">
+						<form th:action="@{/admin/update-profile}" th:object="${user}" method="post"
+							enctype="multipart/form-data">
+							<!-- CSRF token (Spring Security) -->
+							<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+							<!-- ensure id is sent -->
+							<input type="hidden" th:field="*{id}" />
+
+							<table class="table table-borderless">
+								<tbody>
+									<tr>
+										<th>Name</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{name}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>Mobile Number</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{mobileNumber}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>Email</th>
+										<td>:</td>
+										<td><input type="text" th:value="${user.email}" class="form-control" readonly />
+										</td>
+									</tr>
+
+									<tr>
+										<th>Address</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{address}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>City</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{city}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>State</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{state}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>Pin Code</th>
+										<td>:</td>
+										<td><input type="text" th:field="*{pinCode}" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>Image</th>
+										<td>:</td>
+										<td><input type="file" name="imageFile" class="form-control" /></td>
+									</tr>
+
+									<tr>
+										<th>Role</th>
+										<td>:</td>
+										<td><input type="text" th:value="${user.role}" class="form-control" readonly />
+										</td>
+									</tr>
+
+									<tr>
+										<th>Account Status</th>
+										<td>:</td>
+										<td>
+											<input type="text" th:value="${user.isEnable ? 'Enabled' : 'Disabled'}"
+												class="form-control" readonly />
+										</td>
+									</tr>
+
+									<tr>
+										<td></td>
+										<td colspan="2" class="text-center">
+											<button class="btn btn-primary btn-sm" type="submit">Update</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</form>
+					</div>
+
+					<hr />
+
+					<!-- Change Password Section -->
+					<p class="text-center fs-3 mt-4">Change Password</p>
+					<!-- server flash messages -->
+					<div th:if="${pwdSuccess}" class="text-success text-center" th:text="${pwdSuccess}"></div>
+					<div th:if="${pwdError}" class="text-danger text-center" th:text="${pwdError}"></div>
+
+					<div class="col-md-6 offset-md-3">
+						<form id="changePasswordForm" th:action="@{/admin/change-password}" method="post" novalidate>
+							<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+							<table class="table table-borderless">
+								<tbody>
+									<tr>
+										<th>Current Password</th>
+										<td>
+											<input id="currentPassword" type="password" name="currentPassword"
+												class="form-control" required />
+										</td>
+									</tr>
+
+									<tr>
+										<th>New Password</th>
+										<td>
+											<input id="newPassword" type="password" name="newPassword"
+												class="form-control" required minlength="6" />
+											<div id="newPwdHelp" class="form-text">Minimum 6 characters.</div>
+										</td>
+									</tr>
+
+									<tr>
+										<th>Confirm Password</th>
+										<td>
+											<input id="confirmPassword" type="password" name="confirmPassword"
+												class="form-control" required />
+											<!-- Client-side error message (red) -->
+											<div id="pwdMismatchMsg" class="form-text text-danger mt-1"
+												style="display:none;">
+												New password and Confirm password do not match.
+											</div>
+										</td>
+									</tr>
+
+									<tr>
+										<td></td>
+										<td class="text-center">
+											<button id="changePwdBtn" class="btn btn-primary btn-sm"
+												type="submit">Update</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</form>
+					</div>
+
+					<!-- validation script -->
+					<script>
+						(function () {
+							const form = document.getElementById('changePasswordForm');
+							const newPwd = document.getElementById('newPassword');
+							const confirmPwd = document.getElementById('confirmPassword');
+							const msg = document.getElementById('pwdMismatchMsg');
+
+							// live-check as user types
+							function validateMatch() {
+								// clear previous invalid styling
+								confirmPwd.classList.remove('is-invalid');
+								msg.style.display = 'none';
+
+								// basic length check for new password (optional)
+								if (newPwd.value && newPwd.value.length < 6) {
+									confirmPwd.classList.add('is-invalid');
+									msg.textContent = 'New password must be at least 6 characters.';
+									msg.style.display = 'block';
+									return false;
+								}
+
+								// only check match if both fields non-empty
+								if (newPwd.value && confirmPwd.value && newPwd.value !== confirmPwd.value) {
+									confirmPwd.classList.add('is-invalid');
+									msg.textContent = 'New password and Confirm password do not match.';
+									msg.style.display = 'block';
+									return false;
+								}
+
+								// valid
+								msg.style.display = 'none';
+								confirmPwd.classList.remove('is-invalid');
+								return true;
+							}
+
+							newPwd.addEventListener('input', validateMatch);
+							confirmPwd.addEventListener('input', validateMatch);
+
+							// prevent submit if mismatch or invalid
+							form.addEventListener('submit', function (e) {
+								const ok = validateMatch();
+								if (!ok) {
+									e.preventDefault();
+									e.stopPropagation();
+									// focus the offending input
+									confirmPwd.focus();
+								} else {
+									// let server-side handle other checks
+								}
+							});
+						})();
+					</script>
+
+				</div>
+			</div>
+		</div>
+	</section>
+</body>
+
+</html>

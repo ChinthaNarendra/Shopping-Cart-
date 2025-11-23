@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8">
+	<title th:text="${product.title}">Product Details</title>
+</head>
+
+<body>
+	<section>
+		<div class="container card-sh p-3" style="margin-top: 70px; margin-bottom: 100px;">
+			<div class="col-md-12 p-5">
+				<div class="row">
+
+					<th:block th:if="${succMsg}">
+						<p class="alert alert-success text-center " th:text="${succMsg}"></p>
+					</th:block>
+
+					<th:block th:if="${errorMsg}">
+						<p class="alert alert-danger text-center " th:text="${errorMsg}"></p>
+					</th:block>
+
+					<!-- ✅ Product Image -->
+					<div class="col-md-6 text-center">
+						<img th:src="${product.image != null} ?
+                                 @{/uploads/product_img/{img}(img=${product.image})} :
+                                 @{/uploads/product_img/default.jpg}"
+							th:alt="${product.title}" width="400px" height="400px"
+							style=" border-radius: 8px;" />
+					</div>
+
+					<!-- ✅ Product Details -->
+					<div class="col-md-6">
+
+						<p class="fs-3 fw-bold" th:text="${product.title}">Product Title</p>
+
+						<p>
+							<span class="fw-bold">Description:</span><br>
+							<span th:text="${product.description}">Product Description</span>
+						</p>
+
+						<p>
+							<span class="fw-bold">Product Details:</span><br>
+							Status:
+							<span th:if="${product.stock > 0}" class="badge bg-success">Available</span>
+							<span th:unless="${product.stock > 0}" class="badge bg-warning text-dark">Out of
+								Stock</span>
+							<br>
+							Category: <span th:text="${product.category}">Category</span><br>
+							Policy: 7 Days Replacement & Return
+						</p>
+
+						<!-- ✅ Pricing -->
+						<p class="fs-5 fw-bold">
+							Price:&nbsp;
+							<i class="fas fa-rupee-sign"></i>
+							<span
+								th:text="${#numbers.formatDecimal(product.discountPrice != null ? product.discountPrice : product.price, 1, 2)}">0.00</span>
+
+							<span th:if="${product.discount != null and product.discount > 0}"
+								class="fs-6 text-decoration-line-through text-secondary ms-2">
+								₹<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
+							</span>
+
+							<span th:if="${product.discount != null and product.discount > 0}"
+								class="fs-6 text-success ms-2" th:text="${product.discount + '% off'}">50% off</span>
+						</p>
+
+						<!-- ✅ Features -->
+						<div class="row text-center">
+							<div class="col-md-4 text-success p-2">
+								<i class="fas fa-money-bill-wave fa-2x"></i>
+								<p>Cash On Delivery</p>
+							</div>
+							<div class="col-md-4 text-danger p-2">
+								<i class="fas fa-undo-alt fa-2x"></i>
+								<p>Return Available</p>
+							</div>
+							<div class="col-md-4 text-primary p-2">
+								<i class="fas fa-truck-moving fa-2x"></i>
+								<p>Free Shipping</p>
+							</div>
+						</div>
+
+						<!-- ✅ Add To Cart / Out of Stock Button -->
+						<div class="mt-3">
+							<!-- Not signed in — go to signin -->
+							<th:block th:if="${user == null}">
+								<a th:if="${product.stock > 0}" th:href="@{/signin}" class="btn btn-primary col-md-12">
+									<i class="fas fa-cart-plus"></i> Add To Cart
+								</a>
+							</th:block>
+
+							<!-- Signed in — call the correct controller path (/user/addCart) -->
+							<th:block th:unless="${user == null}">
+								<a th:if="${product.stock > 0}"
+									th:href="@{/user/addCart(pid=${product.id}, uid=${user.id})}"
+									class="btn btn-primary col-md-12">
+									<i class="fas fa-cart-plus"></i> Add To Cart
+								</a>
+							</th:block>
+
+							<button th:unless="${product.stock > 0}" class="btn btn-warning col-md-12" disabled>
+								<i class="fas fa-times-circle"></i> Out of Stock
+							</button>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Toast initialization script -->
+	<script th:inline="javascript">
+		/* <![CDATA[ */
+		document.addEventListener('DOMContentLoaded', function () {
+			// Show success toast if present
+			var success = /*[[${succMsg != null}]]*/ false;
+			var error = /*[[${errorMsg != null}]]*/ false;
+
+			if (success) {
+				var el = document.getElementById('successToast');
+				if (el) {
+					var toast = new bootstrap.Toast(el);
+					toast.show();
+				}
+			}
+
+			if (error) {
+				var el2 = document.getElementById('errorToast');
+				if (el2) {
+					var toast2 = new bootstrap.Toast(el2);
+					toast2.show();
+				}
+			}
+		});
+        /* ]]> */
+	</script>
+
+	<!-- IMPORTANT:
+         Ensure Bootstrap JS is loaded (bundle or separate) in your base layout.
+         Example (if not already present in base):
+         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    -->
+</body>
+
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Home</title>
+</head>
+
+<body>
+	<section>
+
+		<!-- ------------------ Slider ------------------ -->
+		<div id="carouselExample" class="carousel slide">
+			<div class="carousel-inner">
+
+				<div class="carousel-item active">
+					<img th:src="@{/img/ecom1.png}" class="d-block w-100" th:alt="'Slide 1'" height="350">
+				</div>
+
+				<div class="carousel-item">
+					<img th:src="@{/img/ecom3.png}" class="d-block w-100" th:alt="'Slide 2'" height="350">
+				</div>
+
+				<div class="carousel-item">
+					<img th:src="@{/img/ecom2.png}" class="d-block w-100" th:alt="'Slide 3'" height="350">
+				</div>
+
+			</div>
+
+			<button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+				<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+				<span class="visually-hidden">Previous</span>
+			</button>
+
+			<button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+				<span class="carousel-control-next-icon" aria-hidden="true"></span>
+				<span class="visually-hidden">Next</span>
+			</button>
+
+		</div>
+		<!-- ------------------ End Slider ------------------ -->
+
+
+
+		<!-- ------------------ Category Section ------------------ -->
+		<div class="container mt-4">
+			<div class="row">
+
+				<p class="text-center fs-4">Category</p>
+
+				<!-- Iterate Categories -->
+				<div class="col-md-2 mb-3" th:each="c : ${categorys}">
+					<div class="card rounded-circle shadow p-3 mb-5 bg-body-tertiary rounded" style="overflow:hidden;">
+						<div class="card-body text-center">
+
+							<a th:href="@{'/products?category='+${c.name}}">
+								<img th:src="@{/uploads/category_img/{img}(img=${c.imageName})}" th:alt="${c.name}"
+									style="width:65%; height:140px;">
+							</a>
+
+							<br>
+
+							<a th:href="@{'/products?category='+${c.name}}" th:text="${c.name}"
+								class="text-decoration-none" style="color:black">
+								Category Name
+							</a>
+
+						</div>
+					</div>
+				</div>
+
+				<!-- No Category -->
+				<div class="col-12" th:if="${#lists.isEmpty(categorys)}">
+					<p class="text-center">No categories available.</p>
+				</div>
+
+			</div>
+		</div>
+		<!-- ------------------ End Category Section ------------------ -->
+
+
+
+		<!-- ------------------ Latest Product Section ------------------ -->
+		<div class="container-fluid bg-light p-3 mt-4">
+			<div class="row">
+
+				<p class="text-center fs-4 w-100">Latest Products</p>
+
+				<!-- Iterate Products -->
+				<div class="col-md-3 mb-3" th:each="p : ${products}">
+					<div class="card shadow p-3 mb-2 bg-body-tertiary">
+
+						<div class="card-body text-center">
+
+							<a th:href="@{'/product/' + ${p.id}}">
+								<img th:src="@{/uploads/product_img/{img}(img=${p.image})}" th:alt="${p.title}"
+									style="width:65%; height:140px; object-fit:cover;">
+							</a>
+
+							<br>
+
+							<a th:href="@{'/product/' + ${p.id}}" th:text="${p.title}"
+								class="text-decoration-none" style="color:black">
+								Product Title
+							</a>
+
+						</div>
+
+					</div>
+				</div>
+
+				<!-- No Products -->
+				<div class="col-12" th:if="${#lists.isEmpty(products)}">
+					<p class="text-center">No products to show.</p>
+				</div>
+
+			</div>
+		</div>
+		<!-- ------------------ End Latest Product Section ------------------ -->
+
+	</section>
+</body>
+
+</html>

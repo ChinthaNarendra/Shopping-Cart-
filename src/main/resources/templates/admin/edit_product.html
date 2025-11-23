@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="ISO-8859-1">
+	<title>Edit Product</title>
+</head>
+
+<body>
+	<section>
+		<div class="container p-5 mt-3">
+			<div class="row">
+				<div class="col-md-8 offset-md-2">
+					<div class="card card-sh">
+
+						<!-- success / error messages -->
+						<th:block th:if="${succMsg}">
+							<div class="alert alert-success text-center fw-bold" th:text="${succMsg}"></div>
+						</th:block>
+
+						<th:block th:if="${errorMsg}">
+							<div class="alert alert-danger text-center fw-bold" th:text="${errorMsg}"></div>
+						</th:block>
+
+						<div class="card-header text-center">
+							<p class="fs-4">Edit Product</p>
+						</div>
+
+						<div class="card-body">
+							<!-- Bind the form to product so fields populate and bind on submit -->
+							<form th:action="@{/admin/updateProduct}" th:object="${product}" method="post"
+								enctype="multipart/form-data">
+
+								<!-- hidden id so controller receives product.id -->
+								<input type="hidden" th:field="*{id}" />
+
+								<div class="mb-3">
+									<label>Enter Title</label>
+									<input type="text" th:field="*{title}" class="form-control" required />
+								</div>
+
+								<div class="mb-3">
+									<label>Enter Description</label>
+									<textarea rows="3" th:field="*{description}" class="form-control"
+										required></textarea>
+								</div>
+
+								<div class="row">
+									<div class="mb-3 col">
+										<label>Category</label>
+										<select th:field="*{category}" class="form-control" required>
+											<option value="">-- select --</option>
+											<option th:each="c : ${categories}" th:value="${c.name}" th:text="${c.name}"
+												th:selected="${c.name == product.category}"></option>
+										</select>
+									</div>
+									<div class="mb-3 col">
+										<label>Enter Price</label>
+										<input type="number" step="0.01" th:field="*{price}" id="price"
+											class="form-control" required />
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="mb-3 col">
+										<label>Discount (%)</label>
+										<!-- discount is int in model, but input allows decimals if you want -->
+										<input type="number" step="1" min="0" max="100" th:field="*{discount}"
+											id="discount" class="form-control" />
+									</div>
+
+									<div class="mb-3 col">
+										<label>Discount Price</label>
+										<!-- readonly: computed on front-end for preview, server will recompute too -->
+										<input type="number" step="0.01" th:field="*{discountPrice}" id="discountPrice"
+											class="form-control" readonly />
+									</div>
+								</div>
+								<!-- ✅ STATUS section added here -->
+								<div class="mb-3">
+									<label class="form-label">Status</label>
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="isActive" value="true"
+											id="radioActive" th:checked="${product.isActive==true}">
+										<label class="form-check-label" for="radioActive">Active</label>
+									</div>
+
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="isActive" value="false"
+											id="radioInactive" th:checked="${product.isActive==false}">
+										<label class="form-check-label" for="radioInactive">Inactive</label>
+									</div>
+								</div>
+								<!-- ✅ END STATUS -->
+
+								<div class="row">
+									<div class="mb-3 col">
+										<label>Enter Stock</label>
+										<input type="number" th:field="*{stock}" class="form-control" required />
+									</div>
+
+									<div class="mb-3 col">
+										<label>Upload Image (optional)</label>
+										<input type="file" name="file" class="form-control" accept="image/*" />
+									</div>
+								</div>
+
+								<!-- image preview -->
+								<div class="mb-3">
+									<label>Current Image</label>
+									<div class="mt-2">
+										<img th:src="${product.image != null} ?
+                                                 @{/uploads/product_img-20251106T053440Z-1-001/product_img/{img}(img=${product.image})} :
+                                                 @{/uploads/product_img-20251106T053440Z-1-001/product_img/default.jpg}"
+											th:alt="${product.title}" width="140" height="140"
+											style="object-fit:cover; border-radius:6px;" />
+									</div>
+								</div>
+
+								<button class="btn btn-primary col-md-12 mt-2" type="submit">Update Product</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- auto-hide messages -->
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		(function () {
+			const priceEl = document.getElementById('price');
+			const discountEl = document.getElementById('discount');
+			const discountPriceEl = document.getElementById('discountPrice');
+
+			function computeAndSetDiscountPrice() {
+				let price = parseFloat(priceEl.value);
+				if (isNaN(price)) price = 0;
+
+				// discount is integer in model but allow number input
+				let discount = parseFloat(discountEl.value);
+				if (isNaN(discount)) discount = 0;
+
+				if (discount < 0) discount = 0;
+				if (discount > 100) discount = 100;
+
+				const discountAmount = (price * discount) / 100.0;
+				const discountPrice = price - discountAmount;
+
+				discountPriceEl.value = discountPrice.toFixed(2);
+			}
+
+			if (priceEl) priceEl.addEventListener('input', computeAndSetDiscountPrice);
+			if (discountEl) discountEl.addEventListener('input', computeAndSetDiscountPrice);
+
+			// run once on load
+			document.addEventListener('DOMContentLoaded', computeAndSetDiscountPrice);
+		})();
+ /*]]>*/
+	</script>
+
+	<script th:inline="javascript">
+		setTimeout(function () {
+			var alerts = document.querySelectorAll('.alert');
+			alerts.forEach(function (a) {a.style.display = 'none';});
+		}, 3000);
+	</script>
+</body>
+
+</html>

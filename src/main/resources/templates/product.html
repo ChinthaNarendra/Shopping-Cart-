@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Products</title>
+</head>
+
+<body>
+	<section th:with="
+            curCategory=${param.category != null && #strings.length(param.category[0]) > 0 ? param.category[0] : null},
+            curPage=${param.page != null && #strings.length(param.page[0]) > 0 ? (param.page[0] matches '^[0-9]+$' ? #numbers.parseInteger(param.page[0]) : 0) : 0},
+            curSearch=${param.ch != null && #strings.length(param.ch[0]) > 0 ? param.ch[0] : null}
+        ">
+
+		<!-- Search bar -->
+		<div class="container-fluid bg-primary p-5 mt-5">
+			<div class="row">
+				<div class="col-md-8 offset-md-2">
+					<form th:action="@{/products}" method="get">
+						<input type="hidden" name="category" th:if="${curCategory != null}" th:value="${curCategory}" />
+						<div class="input-group">
+							<input type="text" name="ch" class="form-control" placeholder="Search products..."
+								th:value="${curSearch}" />
+							<button class="btn btn-light text-dark ms-3 col-md-2" type="submit">
+								<i class="fa-solid fa-magnifying-glass"></i> Search
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="container-fluid mt-1">
+			<div class="row">
+
+				<!-- Categories column -->
+				<div class="col-md-2 p-0">
+					<div class="card shadow p-1 mb-5 bg-body-tertiary rounded">
+						<div class="card-body p-0">
+							<div class="list-group">
+								<p class="fs-5 text-center">Category</p>
+
+								<a th:href="@{/products}" th:classappend="${curCategory == null} ? ' active' : ''"
+									class="list-group-item list-group-item-action">All</a>
+
+								<a th:each="c : ${categories}"
+									th:href="@{|/products?category=${c.name}${curSearch != null ? '&ch=' + curSearch : ''}|}"
+									th:classappend="${curCategory != null && curCategory.equals(c.name)} ? ' active' : ''"
+									class="list-group-item list-group-item-action" th:text="${c.name}">Category</a>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Products grid -->
+				<div class="col-md-10">
+					<div class="card">
+						<div class="card-body">
+							<p class="fs-3 text-center mb-4">Products</p>
+
+							<div class="row">
+								<div class="col-md-3 mb-4" th:each="p : ${products}">
+									<div class="card shadow p-2 h-100">
+										<div class="card-body text-center d-flex flex-column">
+
+											<div class="mb-3">
+												<img th:if="${p.image != null and p.image != ''}"
+													th:src="@{/uploads/product_img/{img}(img=${p.image})}"
+													th:alt="${p.title}" class="img-fluid"
+													style="width:100%; height:150px; object-fit:cover; border-radius:6px;" />
+
+												<img th:unless="${p.image != null and p.image != ''}"
+													th:src="@{/uploads/product_img/default.jpg}"
+													th:alt="${p.title} (default)" class="img-fluid"
+													style="width:100%; height:150px; object-fit:cover; border-radius:6px;" />
+											</div>
+
+											<h5 class="card-title" th:text="${p.title}">Product name</h5>
+
+											<div class="mb-2">
+												<div class="fs-5 fw-bold text-dark">
+													₹<span
+														th:text="${#numbers.formatDecimal(p.discountPrice != null ? p.discountPrice : p.price, 1, 2)}">0.00</span>
+												</div>
+
+												<div th:if="${p.discount != null and p.discount > 0}"
+													class="text-muted">
+													<span class="text-decoration-line-through me-1">
+														₹<span
+															th:text="${#numbers.formatDecimal(p.price, 1, 2)}">0.00</span>
+													</span>
+													<span class="badge bg-success" th:text="${p.discount + '% off'}">20%
+														off</span>
+												</div>
+											</div>
+
+											<div class="mt-auto">
+												<a th:href="@{'/product/' + ${p.id}}"
+													class="btn btn-primary col-10">View Details</a>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div th:if="${#lists.isEmpty(products)}" class="col-12">
+									<div class="alert alert-info text-center">No products found.</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<br>
+
+					<!-- Start Pagination -->
+					<div class="row">
+						<div class="col-md-4">Total Products: [[${totalElements}]]</div>
+						<div class="col-md-6">
+							<th:block th:if="${productsSize>0}">
+								<nav aria-label="Page navigation example">
+									<ul class="pagination">
+										<li class="page-item">
+											<a class="page-link" th:classappend="${isFirst} ?'disabled':''"
+												th:href="@{'/products?pageNo='+${pageNo-1}}" aria-label="Previous">
+												<span aria-hidden="true">&laquo;</span>
+											</a>
+										</li>
+										<li th:each="i:${#numbers.sequence(1, totalPages)}" class="page-item">
+											<a class="page-link" th:classappend="${pageNo+1==i}?'active':''"
+												th:href="@{'/products?pageNo='+${i-1}}">[[${i}]]</a>
+										</li>
+										<li class="page-item">
+											<a class="page-link" th:classappend="${isLast} ?'disabled':''"
+												th:href="@{'/products?pageNo='+${pageNo+1}}" aria-label="Next">
+												<span aria-hidden="true">&raquo;</span>
+											</a>
+										</li>
+									</ul>
+								</nav>
+							</th:block>
+						</div>
+					</div>
+				</div>
+				<!-- End Pagination -->
+
+			</div>
+		</div>
+		</div>
+	</section>
+</body>
+
+</html>

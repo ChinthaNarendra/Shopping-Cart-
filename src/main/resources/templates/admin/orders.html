@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>All Orders</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+	<section>
+		<div class="container-fluid mt-5 p-2">
+			<div class="row">
+				<!-- <div class="col-12 mb-2 d-flex justify-content-between align-items-center">-->
+				<p class="text-center fs-3 mb-0">All Orders</p>
+				<hr>
+				<a href="/admin/" class="text-decoration-none"> <i class="fa-solid fa-arrow-left"></i> Back</a>
+				<!-- </div>-->
+
+
+
+				<!-- Search -->
+				<div class="col-md-4 p-4">
+					<form th:action="@{/admin/orders}" method="get" role="search" class="row g-2">
+						<div class="col">
+							<input type="text" class="form-control" name="ch" placeholder="Enter Order Id"
+								th:value="${param.ch}" />
+						</div>
+						<div class="col-auto">
+							<button class="btn btn-primary">Search</button>
+						</div>
+					</form>
+
+				</div>
+
+				<!-- Orders table -->
+				<div class="col-md-12 ps-4 pe-4">
+					<div class="table-responsive">
+						<table class="table table-bordered align-middle">
+							<thead class="table-light">
+								<tr>
+									<th>Order Id</th>
+									<th>Deliver Details</th>
+									<th>Date</th>
+									<th>Product Details</th>
+									<th>Price Details</th>
+									<th>Status</th>
+									<th style="width:220px">Action</th>
+								</tr>
+							</thead>
+
+							<!-- Render orders list (controller should put either full list or single-item list for search) -->
+							<tbody th:if="${orders != null and #lists.size(orders) > 0}">
+								<tr th:each="o : ${orders}">
+									<th scope="row" th:text="${o.orderId != null ? o.orderId : o.id}">ORDER_ID</th>
+
+									<td>
+										<div>
+											<strong
+												th:text="${o.orderAddress != null ? o.orderAddress.firstName + ' ' + o.orderAddress.lastName : ''}">Name</strong><br />
+											<span>Email: </span><span
+												th:text="${o.orderAddress != null ? o.orderAddress.email : ''}"></span><br />
+											<span>Mob: </span><span
+												th:text="${o.orderAddress != null ? o.orderAddress.mobileNo : ''}"></span><br />
+											<span>Address: </span><span
+												th:text="${o.orderAddress != null ? o.orderAddress.address : ''}"></span><br />
+											<span>City: </span><span
+												th:text="${o.orderAddress != null ? o.orderAddress.city : ''}"></span><br />
+											<span>State / PIN: </span>
+											<span
+												th:text="${o.orderAddress != null ? o.orderAddress.state : ''}"></span>,
+											<span
+												th:text="${o.orderAddress != null ? o.orderAddress.pincode : ''}"></span>
+										</div>
+									</td>
+
+									<td
+										th:text="${o.orderDate != null ? #dates.format(o.orderDate, 'dd-MMM-yyyy') : '-'}">
+										DATE</td>
+
+									<td>
+										<div th:if="${o.product != null}">
+											<strong th:text="${o.product.title}">Product title</strong><br />
+											<small th:text="${o.product.description}">Description</small>
+										</div>
+										<div th:if="${o.product == null}">—</div>
+									</td>
+
+									<td>
+										<div>Quantity: <span th:text="${o.quantity != null ? o.quantity : 0}">0</span>
+										</div>
+										<div>Price: ₹<span th:text="${o.price != null ? o.price : 0}">0</span></div>
+										<div>Total: ₹<span
+												th:text="${(o.price != null ? o.price : 0) * (o.quantity != null ? o.quantity : 0)}">0</span>
+										</div>
+									</td>
+
+									<td th:text="${o.status}">STATUS</td>
+
+									<td>
+										<form th:action="@{/admin/update-order-status}" method="post"
+											class="d-flex gap-2 align-items-center">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}" />
+											<input type="hidden" name="id" th:value="${o.id}" />
+
+											<select class="form-select form-select-sm" name="st" required>
+												<option value="" disabled selected hidden>--select--</option>
+												<option th:each="st : ${T(com.ecom.util.OrderStatus).values()}"
+													th:value="${st.id}" th:text="${st.name}"></option>
+											</select>
+
+											<button type="submit" class="btn btn-sm btn-primary"
+												th:disabled="${o.status == 'Cancelled' or o.status == 'Delivered'}">
+												Update
+											</button>
+										</form>
+									</td>
+								</tr>
+							</tbody>
+
+							<!-- No orders found -->
+							<tbody th:unless="${orders != null and #lists.size(orders) > 0}">
+								<tr>
+									<td colspan="7" class="text-center py-4">
+										<div th:if="${param.q != null and param.q != ''}">
+											No orders found for "<span th:text="${param.q}"></span>".
+										</div>
+										<div th:unless="${param.q != null and param.q != ''}">
+											No orders found.
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- Pagination -->
+						<div class="row mt-3">
+							<div class="col-md-4">Total Products: <span th:text="${totalElements}"></span></div>
+
+							<div class="col-md-6">
+								<ul class="pagination">
+									<li class="page-item" th:classappend="${isFirst} ? 'disabled'">
+										<a class="page-link"
+											th:href="@{'/admin/orders?pageNo=' + ${pageNo - 1}}">&laquo;</a>
+									</li>
+
+									<li th:each="i : ${#numbers.sequence(1, totalPages)}"
+										th:classappend="${pageNo + 1 == i} ? 'active'" class="page-item">
+										<a class="page-link" th:text="${i}"
+											th:href="@{'/admin/orders?pageNo=' + ${i - 1}}"></a>
+									</li>
+
+									<li class="page-item" th:classappend="${isLast} ? 'disabled'">
+										<a class="page-link"
+											th:href="@{'/admin/orders?pageNo=' + ${pageNo + 1}}">&raquo;</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</section>
+</body>
+
+</html>

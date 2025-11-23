@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base :: layout(~{::section})">
+
+<head>
+	<meta charset="ISO-8859-1">
+	<title>View Users</title>
+</head>
+
+<body>
+	<section>
+		<div class="container-fluid mt-5 p-5">
+			<div class="card card-sh">
+				<div class="card-header text-center">
+					<p class="fs-4" th:if="${userType == 1}">Users</p>
+					<p class="fs-4" th:if="${userType == 2}">Admin</p>
+				</div>
+
+				<div class="card-body">
+					<!-- Success / Error messages -->
+					<th:block th:if="${succMsg}">
+						<div class="alert alert-success text-center fw-bold" th:text="${succMsg}"></div>
+					</th:block>
+
+					<th:block th:if="${errorMsg}">
+						<div class="alert alert-danger text-center fw-bold" th:text="${errorMsg}"></div>
+					</th:block>
+
+					<div class="table-responsive">
+						<table class="table align-middle table-bordered">
+							<thead class="table-light">
+								<tr>
+									<th scope="col">Sl No</th>
+									<th scope="col">Profile</th>
+									<th scope="col">Name</th>
+									<th scope="col">Email</th>
+									<th scope="col">Mobile No</th>
+									<th scope="col">Address</th>
+									<th scope="col">City</th>
+									<th scope="col">State</th>
+									<th scope="col">Pin Code</th>
+									<th scope="col">Role</th>
+									<th scope="col">Status</th>
+									<th scope="col">Action</th>
+								</tr>
+							</thead>
+
+							<tbody>
+								<tr th:each="u, stat : ${users}">
+									<th scope="row" th:text="${stat.count}">1</th>
+
+									<td class="text-center">
+										<!-- only attempt when profileImage is non-empty -->
+										<th:block th:if="${u.profileImage != null and u.profileImage != ''}">
+
+											<!-- if DB already contains folder "profile_img/..." use it as-is -->
+											<img th:if="${#strings.contains(u.profileImage,'profile_img/')}"
+												th:src="@{/uploads/{file}(file=${u.profileImage})}" th:alt="${u.name}"
+												width="60" height="60" style="object-fit:cover; border-radius:6px;" />
+
+											<!-- otherwise prefix profile_img/ -->
+											<img th:unless="${#strings.contains(u.profileImage,'profile_img/')}"
+												th:src="@{/uploads/profile_img/{img}(img=${u.profileImage})}"
+												th:alt="${u.name}" width="60" height="60"
+												style="object-fit:cover; border-radius:6px;" />
+
+										</th:block>
+
+										<!-- fallback default image -->
+										<img th:if="${u.profileImage == null or u.profileImage == ''}"
+											th:src="@{/uploads/profile_img/default.jpg}" th:alt="${u.name}" width="60"
+											height="60" style="object-fit:cover; border-radius:6px;" />
+									</td>
+
+									<td th:text="${u.name}">Name</td>
+									<td th:text="${u.email}">email@example.com</td>
+									<td th:text="${u.mobileNumber}">9999999999</td>
+									<td th:text="${u.address}">Address</td>
+									<td th:text="${u.city}">City</td>
+									<td th:text="${u.state}">State</td>
+									<td th:text="${u.pinCode}">123456</td>
+									<td th:text="${u.role}">ROLE_USER</td>
+
+									<td>
+										<span th:text="${u.isEnable} ? 'Enabled' : 'Disabled'">Enabled</span>
+									</td>
+
+									<td class="text-center">
+										<div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
+
+											<!-- Enable -->
+											<a th:if="${!u.isEnable}"
+												th:href="@{/admin/updateSts(status=true, id=${u.id}, type=${userType})}"
+												class="btn btn-sm btn-success d-flex align-items-center">
+												<i class="fa-solid fa-user-check me-1"></i> Enable
+											</a>
+
+											<!-- Disable -->
+											<a th:if="${u.isEnable}"
+												th:href="@{/admin/updateSts(status=false, id=${u.id}, type=${userType})}"
+												class="btn btn-sm btn-secondary d-flex align-items-center">
+												<i class="fa-solid fa-user-slash me-1"></i> Disable
+											</a>
+
+										</div>
+									</td>
+								</tr>
+
+								<tr th:if="${#lists.isEmpty(users)}">
+									<td colspan="12" class="text-center text-muted">No users found.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div> <!-- .table-responsive -->
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<script th:inline="javascript">
+		setTimeout(function () {
+			var alerts = document.querySelectorAll('.alert');
+			alerts.forEach(function (a) {a.style.display = 'none';});
+		}, 3000);
+	</script>
+</body>
+
+</html>

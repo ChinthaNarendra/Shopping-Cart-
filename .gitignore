@@ -1,33 +1,53 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Maven / build
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+/target/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+/.mvn/
 
-### VS Code ###
-.vscode/
+!.mvn/wrapper/maven-wrapper.jar
+
+
+
+# IDE files
+
+/.classpath
+
+/.project
+
+/.settings/
+
+/.idea/
+
+/.vscode/
+
+
+
+# OS files
+
+.DS_Store
+
+Thumbs.db
+
+
+
+# uploads and runtime files
+
+/uploads/
+
+/logs/
+
+
+
+# local environment config (keep out of repo)
+
+src/main/resources/application.properties
+
+
+
+# any local test or backup files
+
+*.log
+
+*.tmp
+

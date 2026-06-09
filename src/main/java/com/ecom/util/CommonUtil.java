@@ -149,8 +149,17 @@ public class CommonUtil {
         System.out.println("===== MAIL METHOD CALLED =====");
         System.out.println("Recipient : " + recipient);
         System.out.println("===== SENDING MAIL =====");
-        mailSender.send(message);
-        System.out.println("===== MAIL SENT SUCCESS =====");
+
+        try {
+            mailSender.send(message);
+            System.out.println("===== MAIL SENT SUCCESS =====");
+        } catch (Exception e) {
+            System.out.println("===== MAIL FAILED =====");
+            System.out.println("ERROR TYPE = " + e.getClass().getName());
+            System.out.println("ERROR MSG = " + e.getMessage());
+            e.printStackTrace();
+        }
+
         return true;
     }
 

@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class CommonUtil {
 
-    @Autowired(required = false)
+    @Autowired
     private JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")

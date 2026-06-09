@@ -78,7 +78,7 @@ public class CommonUtil {
     if (mailSender == null) {
         System.out.println("Mail service disabled");
         return true;
-    }S
+    }
         // Defensive checks
         if (order == null) {
             throw new IllegalArgumentException("Order is required.");

@@ -192,18 +192,22 @@ public class UserController {
 	 * @throws Exception
 	 */
 	@PostMapping("/save-order")
-	public String saveOrder(@ModelAttribute OrderRequest request, Principal p, RedirectAttributes ra) throws Exception {
+	public String saveOrder(@ModelAttribute OrderRequest request,
+			Principal p,
+			RedirectAttributes ra) throws Exception {
 
 		UserDtls user = getLoggedInUserDetails(p);
+
 		if (user == null) {
 			ra.addFlashAttribute("errorMsg", "Please login to place an order.");
 			return "redirect:/login";
 		}
 
 		orderService.saveOrder(user.getId(), request);
-		// you can set a success message or order id in flash attributes
+
 		ra.addFlashAttribute("succMsg", "Order placed successfully!");
-		return "redirect:user/success";
+
+		return "redirect:/user/success";
 	}
 
 	@GetMapping("/success")

@@ -99,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
 
 			ProductOrder saveOrder = orderRepository.save(order);
 			try {
-				// commonUtil.sendMailForProductOrder(saveOrder, "success");
+				commonUtil.sendMailForProductOrder(saveOrder, "success");
 			} catch (Exception e) {
 
 				e.printStackTrace();

@@ -82,7 +82,6 @@ public class CommonUtil {
         System.out.println("===== MAIL METHOD CALLED =====");
         System.out.println("MAIL SENDER = " + mailSender);
         System.out.println("FROM MAIL = " + fromMail);
-        System.out.println("Recipient = " + recipient);
 
         if (mailSender == null) {
             System.out.println("Mail service disabled");
@@ -96,6 +95,7 @@ public class CommonUtil {
             throw new IllegalArgumentException("Order address is required.");
         }
         String recipient = order.getOrderAddress().getEmail();
+        System.out.println("Recipient = " + recipient);
         if (recipient == null || recipient.trim().isEmpty()) {
             throw new IllegalArgumentException("Recipient email is required in order address.");
         }

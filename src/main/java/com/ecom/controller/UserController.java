@@ -203,12 +203,12 @@ public class UserController {
 		orderService.saveOrder(user.getId(), request);
 		// you can set a success message or order id in flash attributes
 		ra.addFlashAttribute("succMsg", "Order placed successfully!");
-		return "redirect:/user/success";
+		return "redirect:user/success";
 	}
 
 	@GetMapping("/success")
 	public String loadSuccess() {
-		return "/user/success";
+		return "user/success";
 	}
 
 	@GetMapping("/user-orders")
@@ -233,7 +233,7 @@ public class UserController {
 
 		if (id == null || st == null) {
 			ra.addFlashAttribute("errorMsg", "Invalid request.");
-			return "redirect:/user/user-orders";
+			return "redirect:user/user-orders";
 		}
 
 		UserDtls loginUser = getLoggedInUserDetails(p);
@@ -245,12 +245,12 @@ public class UserController {
 		ProductOrder order = orderService.getOrderById(id);
 		if (order == null) {
 			ra.addFlashAttribute("errorMsg", "Order not found.");
-			return "redirect:/user/user-orders";
+			return "redirect:user/user-orders";
 		}
 
 		if (order.getUser() == null || !order.getUser().getId().equals(loginUser.getId())) {
 			ra.addFlashAttribute("errorMsg", "You are not authorized to update this order.");
-			return "redirect:/user/user-orders";
+			return "redirect:user/user-orders";
 		}
 
 		String status = null;
@@ -262,12 +262,12 @@ public class UserController {
 		}
 		if (status == null) {
 			ra.addFlashAttribute("errorMsg", "Invalid status selected.");
-			return "redirect:/user/user-orders";
+			return "redirect:user/user-orders";
 		}
 
 		if ("Delivered".equalsIgnoreCase(order.getStatus()) && "Cancelled".equalsIgnoreCase(status)) {
 			ra.addFlashAttribute("errorMsg", "Cannot cancel a delivered order.");
-			return "redirect:/user/user-orders";
+			return "redirect:user/user-orders";
 		}
 
 		ProductOrder updated = orderService.updateOrderStatus(id, status);
@@ -284,7 +284,7 @@ public class UserController {
 		} else {
 			ra.addFlashAttribute("errorMsg", "Status not updated.");
 		}
-		return "redirect:/user/user-orders";
+		return "redirect:user/user-orders";
 	}
 
 	@GetMapping("/profile")
@@ -314,7 +314,7 @@ public class UserController {
 		// ensure user.id belongs to logged in user (prevents tampering)
 		if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
 			redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-			return "redirect:/user/profile";
+			return "redirect:user/profile";
 		}
 
 		try {
@@ -329,7 +329,7 @@ public class UserController {
 			redirectAttrs.addFlashAttribute("errorMsg", "Error updating profile: " + ex.getMessage());
 		}
 
-		return "redirect:/user/profile";
+		return "redirect:user/profile";
 	}
 
 	@PostMapping("/change-password")
@@ -349,14 +349,14 @@ public class UserController {
 		// 1️⃣ Check new password = confirm password
 		if (!newPassword.equals(confirmPassword)) {
 			redirectAttrs.addFlashAttribute("pwdError", "New Password and Confirm Password do not match!");
-			return "redirect:/user/profile";
+			return "redirect:user/profile";
 		}
 
 		// 2️⃣ Validate old password
 		boolean matches = passwordEncoder.matches(currentPassword, loggedInUser.getPassword());
 		if (!matches) {
 			redirectAttrs.addFlashAttribute("pwdError", "Current password is incorrect!");
-			return "redirect:/user/profile";
+			return "redirect:user/profile";
 		}
 
 		// 3️⃣ Update password

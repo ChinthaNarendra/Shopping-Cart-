@@ -79,6 +79,11 @@ public class CommonUtil {
      */
     public Boolean sendMailForProductOrder(ProductOrder order, String status) throws Exception {
 
+        System.out.println("===== MAIL METHOD CALLED =====");
+        System.out.println("MAIL SENDER = " + mailSender);
+        System.out.println("FROM MAIL = " + fromMail);
+        System.out.println("Recipient = " + recipient);
+
         if (mailSender == null) {
             System.out.println("Mail service disabled");
             return true;
@@ -122,7 +127,8 @@ public class CommonUtil {
                 }
             }
         } catch (Exception e) {
-            categoryText = "";
+            System.out.println("===== MAIL ERROR =====");
+            e.printStackTrace();
         }
 
         String msg = template.replace("[[name]]", safeStr(order.getOrderAddress().getFirstName()))

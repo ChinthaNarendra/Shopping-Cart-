@@ -23,42 +23,44 @@ public class CommonUtil {
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
-    
+
+    @Value("${spring.mail.username}")
+    private String fromMail;
+
     @Autowired
     private UserService userService;
-    
 
     // process to send the mail (password reset)
     public Boolean sendMail(String url, String reciepentEmail)
-        throws UnsupportedEncodingException, MessagingException {
+            throws UnsupportedEncodingException, MessagingException {
 
-    if (mailSender == null) {
-        System.out.println("Mail service disabled");
+        if (mailSender == null) {
+            System.out.println("Mail service disabled");
+            return true;
+        }
+
+        if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Recipient email is required for sendMail.");
+        }
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(fromMail, "Shopping cart");
+        helper.setTo(reciepentEmail);
+
+        String content = "<p>Hello,</p>"
+                + "<p>You have requested to reset your password.</p>"
+                + "<p>Click the link below to change your password:</p>"
+                + "<p><a href=\"" + url + "\">Change my password</a></p>";
+
+        helper.setSubject("Password Reset");
+        helper.setText(content, true);
+
+        mailSender.send(message);
+
         return true;
     }
-
-    if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
-        throw new IllegalArgumentException("Recipient email is required for sendMail.");
-    }
-
-    MimeMessage message = mailSender.createMimeMessage();
-    MimeMessageHelper helper = new MimeMessageHelper(message);
-
-    helper.setFrom("chinthanarendracn@gmail.com", "Shopping cart");
-    helper.setTo(reciepentEmail);
-
-    String content = "<p>Hello,</p>"
-            + "<p>You have requested to reset your password.</p>"
-            + "<p>Click the link below to change your password:</p>"
-            + "<p><a href=\"" + url + "\">Change my password</a></p>";
-
-    helper.setSubject("Password Reset");
-    helper.setText(content, true);
-
-    mailSender.send(message);
-
-    return true;
-}
 
     public static String generateUrl(HttpServletRequest request) {
         String siteUrl = request.getRequestURL().toString();
@@ -68,17 +70,19 @@ public class CommonUtil {
     /**
      * Sends product order status mail.
      *
-     * NOTE: consider annotating this with @Async to avoid blocking the request thread:
-     *   @Async
-     *   public Boolean sendMailForProductOrder(...) { ... }
-     * Also enable async in configuration with @EnableAsync.
+     * NOTE: consider annotating this with @Async to avoid blocking the request
+     * thread:
+     * 
+     * @Async
+     *        public Boolean sendMailForProductOrder(...) { ... }
+     *        Also enable async in configuration with @EnableAsync.
      */
     public Boolean sendMailForProductOrder(ProductOrder order, String status) throws Exception {
 
-    if (mailSender == null) {
-        System.out.println("Mail service disabled");
-        return true;
-    }
+        if (mailSender == null) {
+            System.out.println("Mail service disabled");
+            return true;
+        }
         // Defensive checks
         if (order == null) {
             throw new IllegalArgumentException("Order is required.");
@@ -93,7 +97,7 @@ public class CommonUtil {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom("chinthanarendracn@gmail.com", "Shopping cart");
+        helper.setFrom(fromMail, "Shopping cart");
         helper.setTo(recipient);
 
         // local template (won't mutate any class-level state)
@@ -136,7 +140,11 @@ public class CommonUtil {
         }
         helper.setSubject(subject);
         helper.setText(msg, true); // true => HTML
+        System.out.println("===== MAIL METHOD CALLED =====");
+        System.out.println("Recipient : " + recipient);
+        System.out.println("===== SENDING MAIL =====");
         mailSender.send(message);
+        System.out.println("===== MAIL SENT SUCCESS =====");
         return true;
     }
 
@@ -144,15 +152,14 @@ public class CommonUtil {
     private String safeStr(Object o) {
         return o == null ? "" : o.toString();
     }
-    
+
     public UserDtls getLoggedInUserDetails(Principal p) {
-		if (p == null) {
-			return null;
-		}
-		String email = p.getName();
-		UserDtls userDtls = userService.getUserByEmail(email);
-		return userDtls;
-	}
-    
-   
+        if (p == null) {
+            return null;
+        }
+        String email = p.getName();
+        UserDtls userDtls = userService.getUserByEmail(email);
+        return userDtls;
+    }
+
 }

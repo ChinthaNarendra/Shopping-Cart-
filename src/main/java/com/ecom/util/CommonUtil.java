@@ -151,6 +151,8 @@ public class CommonUtil {
         System.out.println("===== SENDING MAIL =====");
 
         try {
+            System.out.println("SMTP HOST = " + System.getProperty("spring.mail.host"));
+            System.out.println("STARTING MAIL SEND...");
             mailSender.send(message);
             System.out.println("===== MAIL SENT SUCCESS =====");
         } catch (Exception e) {

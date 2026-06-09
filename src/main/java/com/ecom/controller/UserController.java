@@ -114,7 +114,9 @@ public class UserController {
 	 */
 	@GetMapping("/cart")
 	public String loadCartPage(Principal p, Model m, RedirectAttributes ra) {
+
 		UserDtls user = getLoggedInUserDetails(p);
+
 		if (user == null) {
 			ra.addFlashAttribute("errorMsg", "Please login to view your cart.");
 			return "redirect:/login";
@@ -123,17 +125,18 @@ public class UserController {
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
 
-		// compute totalOrderPrice safely
 		double totalOrderPrice = 0.0;
+
 		if (carts != null && !carts.isEmpty()) {
 			for (Cart c : carts) {
 				Double tp = c.getTotalPrice();
 				totalOrderPrice += (tp == null ? 0.0 : tp);
 			}
 		}
+
 		m.addAttribute("totalOrderPrice", totalOrderPrice);
 
-		return "/user/cart";
+		return "user/cart"; // <-- FIX
 	}
 
 	/**
@@ -331,44 +334,44 @@ public class UserController {
 
 	@PostMapping("/change-password")
 	public String changePassword(@RequestParam String currentPassword,
-	                             @RequestParam String newPassword,
-	                             @RequestParam String confirmPassword,
-	                             Principal p,
-	                             RedirectAttributes redirectAttrs) {
+			@RequestParam String newPassword,
+			@RequestParam String confirmPassword,
+			Principal p,
+			RedirectAttributes redirectAttrs) {
 
-	    UserDtls loggedInUser = getLoggedInUserDetails(p);
+		UserDtls loggedInUser = getLoggedInUserDetails(p);
 
-	    if (loggedInUser == null) {
-	        redirectAttrs.addFlashAttribute("pwdError", "Please login first.");
-	        return "redirect:/login";
-	    }
+		if (loggedInUser == null) {
+			redirectAttrs.addFlashAttribute("pwdError", "Please login first.");
+			return "redirect:/login";
+		}
 
-	    // 1️⃣ Check new password = confirm password
-	    if (!newPassword.equals(confirmPassword)) {
-	        redirectAttrs.addFlashAttribute("pwdError", "New Password and Confirm Password do not match!");
-	        return "redirect:/user/profile";
-	    }
+		// 1️⃣ Check new password = confirm password
+		if (!newPassword.equals(confirmPassword)) {
+			redirectAttrs.addFlashAttribute("pwdError", "New Password and Confirm Password do not match!");
+			return "redirect:/user/profile";
+		}
 
-	    // 2️⃣ Validate old password
-	    boolean matches = passwordEncoder.matches(currentPassword, loggedInUser.getPassword());
-	    if (!matches) {
-	        redirectAttrs.addFlashAttribute("pwdError", "Current password is incorrect!");
-	        return "redirect:/user/profile";
-	    }
+		// 2️⃣ Validate old password
+		boolean matches = passwordEncoder.matches(currentPassword, loggedInUser.getPassword());
+		if (!matches) {
+			redirectAttrs.addFlashAttribute("pwdError", "Current password is incorrect!");
+			return "redirect:/user/profile";
+		}
 
-	    // 3️⃣ Update password
-	    String encoded = passwordEncoder.encode(newPassword);
-	    loggedInUser.setPassword(encoded);
+		// 3️⃣ Update password
+		String encoded = passwordEncoder.encode(newPassword);
+		loggedInUser.setPassword(encoded);
 
-	    UserDtls updated = userService.updateUser(loggedInUser);
+		UserDtls updated = userService.updateUser(loggedInUser);
 
-	    if (updated == null) {
-	        redirectAttrs.addFlashAttribute("pwdError", "Server error: Password not updated.");
-	    } else {
-	        redirectAttrs.addFlashAttribute("pwdSuccess", "Password updated successfully!");
-	    }
+		if (updated == null) {
+			redirectAttrs.addFlashAttribute("pwdError", "Server error: Password not updated.");
+		} else {
+			redirectAttrs.addFlashAttribute("pwdSuccess", "Password updated successfully!");
+		}
 
-	    return "redirect:/user/profile";
+		return "redirect:/user/profile";
 	}
 
 }

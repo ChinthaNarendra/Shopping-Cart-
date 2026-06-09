@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class CommonUtil {
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender mailSender;
     
     @Autowired
@@ -29,27 +29,36 @@ public class CommonUtil {
     
 
     // process to send the mail (password reset)
-    public Boolean sendMail(String url, String reciepentEmail) throws UnsupportedEncodingException, MessagingException {
+    public Boolean sendMail(String url, String reciepentEmail)
+        throws UnsupportedEncodingException, MessagingException {
 
-        if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
-            throw new IllegalArgumentException("Recipient email is required for sendMail.");
-        }
-
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom("chinthanarendracn@gmail.com", "Shopping cart");
-        helper.setTo(reciepentEmail);
-
-        String content = "<p>Hello,</p>"
-                + "<p>You have requested to reset your password.</p>"
-                + "<p>Click the link below to change your password:</p>"
-                + "<p><a href=\"" + url + "\">Change my password</a></p>";
-
-        helper.setSubject("Password Reset");
-        helper.setText(content, true);
-        mailSender.send(message);
+    if (mailSender == null) {
+        System.out.println("Mail service disabled");
         return true;
     }
+
+    if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
+        throw new IllegalArgumentException("Recipient email is required for sendMail.");
+    }
+
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message);
+
+    helper.setFrom("chinthanarendracn@gmail.com", "Shopping cart");
+    helper.setTo(reciepentEmail);
+
+    String content = "<p>Hello,</p>"
+            + "<p>You have requested to reset your password.</p>"
+            + "<p>Click the link below to change your password:</p>"
+            + "<p><a href=\"" + url + "\">Change my password</a></p>";
+
+    helper.setSubject("Password Reset");
+    helper.setText(content, true);
+
+    mailSender.send(message);
+
+    return true;
+}
 
     public static String generateUrl(HttpServletRequest request) {
         String siteUrl = request.getRequestURL().toString();
@@ -66,6 +75,10 @@ public class CommonUtil {
      */
     public Boolean sendMailForProductOrder(ProductOrder order, String status) throws Exception {
 
+    if (mailSender == null) {
+        System.out.println("Mail service disabled");
+        return true;
+    }S
         // Defensive checks
         if (order == null) {
             throw new IllegalArgumentException("Order is required.");

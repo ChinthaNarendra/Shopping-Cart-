@@ -183,7 +183,7 @@ public class UserController {
 		m.addAttribute("orderPrice", orderPrice);
 		m.addAttribute("totalOrderPrice", totalOrderPrice);
 
-		return "/user/order";
+		return "user/order";
 	}
 
 	/**
@@ -220,7 +220,7 @@ public class UserController {
 		}
 		List<ProductOrder> orders = orderService.getOrderByUser(loginUser.getId());
 		m.addAttribute("orders", orders);
-		return "/user/my_orders";
+		return "user/my_orders";
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class UserController {
 
 	@GetMapping("/profile")
 	public String profile() {
-		return "/user/profile";
+		return "user/profile";
 	}
 
 	// inside com.ecom.controller.UserController
@@ -371,7 +371,7 @@ public class UserController {
 			redirectAttrs.addFlashAttribute("pwdSuccess", "Password updated successfully!");
 		}
 
-		return "redirect:/user/profile";
+		return "redirect:user/profile";
 	}
 
 }

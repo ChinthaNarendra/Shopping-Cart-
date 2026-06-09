@@ -30,10 +30,9 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	private CartRepository cartRepository;
-	
-	@Autowired
-    private CommonUtil commonUtil;
 
+	@Autowired
+	private CommonUtil commonUtil;
 
 	/**
 	 * Save an order for every cart item of the user. This method is transactional
@@ -100,9 +99,9 @@ public class OrderServiceImpl implements OrderService {
 
 			ProductOrder saveOrder = orderRepository.save(order);
 			try {
-				commonUtil.sendMailForProductOrder(saveOrder, "success");
+				// commonUtil.sendMailForProductOrder(saveOrder, "success");
 			} catch (Exception e) {
-				
+
 				e.printStackTrace();
 			}
 		}
@@ -152,7 +151,7 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public ProductOrder getOrdersByOrderId(String orderId) {
 		return orderRepository.findByOrderId(orderId);
-		
+
 	}
 
 	@Override

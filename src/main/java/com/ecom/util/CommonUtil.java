@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.ProductOrder;
 import com.ecom.model.UserDtls;
@@ -21,14 +20,15 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class CommonUtil {
 
+    // ==========================
+    // MAIL CONFIG (TEMP DISABLED)
+    // ==========================
+
     // @Autowired
     // private JavaMailSender mailSender;
 
     // @Value("${spring.mail.username}")
     // private String fromMail;
-
-    @Autowired
-    private UserService userService;
 
     // @Value("${spring.mail.host}")
     // private String host;
@@ -36,35 +36,49 @@ public class CommonUtil {
     // @Value("${spring.mail.port}")
     // private String port;
 
-    // process to send the mail (password reset)
-    public Boolean sendMail(String url, String reciepentEmail)
-            throws UnsupportedEncodingException, MessagingException {
+    @Autowired
+    private UserService userService;
 
-        if (mailSender == null) {
-            System.out.println("Mail service disabled");
-            return true;
-        }
+    // ==========================
+    // PASSWORD RESET MAIL
+    // ==========================
 
-        if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
-            throw new IllegalArgumentException("Recipient email is required for sendMail.");
-        }
+    /*
+     * public Boolean sendMail(String url, String reciepentEmail)
+     * throws UnsupportedEncodingException, MessagingException {
+     * 
+     * if (mailSender == null) {
+     * System.out.println("Mail service disabled");
+     * return true;
+     * }
+     * 
+     * if (reciepentEmail == null || reciepentEmail.trim().isEmpty()) {
+     * throw new
+     * IllegalArgumentException("Recipient email is required for sendMail.");
+     * }
+     * 
+     * MimeMessage message = mailSender.createMimeMessage();
+     * MimeMessageHelper helper = new MimeMessageHelper(message);
+     * 
+     * helper.setFrom(fromMail, "Shopping cart");
+     * helper.setTo(reciepentEmail);
+     * 
+     * String content = "<p>Hello,</p>"
+     * + "<p>You have requested to reset your password.</p>"
+     * + "<p>Click the link below to change your password:</p>"
+     * + "<p><a href=\"" + url + "\">Change my password</a></p>";
+     * 
+     * helper.setSubject("Password Reset");
+     * helper.setText(content, true);
+     * 
+     * mailSender.send(message);
+     * 
+     * return true;
+     * }
+     */
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-
-        helper.setFrom(fromMail, "Shopping cart");
-        helper.setTo(reciepentEmail);
-
-        String content = "<p>Hello,</p>"
-                + "<p>You have requested to reset your password.</p>"
-                + "<p>Click the link below to change your password:</p>"
-                + "<p><a href=\"" + url + "\">Change my password</a></p>";
-
-        helper.setSubject("Password Reset");
-        helper.setText(content, true);
-
-        mailSender.send(message);
-
+    public Boolean sendMail(String url, String reciepentEmail) {
+        System.out.println("Password reset mail disabled");
         return true;
     }
 
@@ -73,130 +87,47 @@ public class CommonUtil {
         return siteUrl.replace(request.getServletPath(), "");
     }
 
-    /**
-     * Sends product order status mail.
-     *
-     * NOTE: consider annotating this with @Async to avoid blocking the request
-     * thread:
+    // ==========================
+    // ORDER MAIL
+    // ==========================
+
+    /*
+     * public Boolean sendMailForProductOrder(ProductOrder order, String status)
+     * throws Exception {
      * 
-     * @Async
-     *        public Boolean sendMailForProductOrder(...) { ... }
-     *        Also enable async in configuration with @EnableAsync.
+     * System.out.println("===== MAIL METHOD CALLED =====");
+     * System.out.println("MAIL SENDER = " + mailSender);
+     * System.out.println("FROM MAIL = " + fromMail);
+     * 
+     * if (mailSender == null) {
+     * System.out.println("Mail service disabled");
+     * return true;
+     * }
+     * 
+     * String recipient = order.getOrderAddress().getEmail();
+     * 
+     * MimeMessage message = mailSender.createMimeMessage();
+     * MimeMessageHelper helper = new MimeMessageHelper(message);
+     * 
+     * helper.setFrom(fromMail, "Shopping cart");
+     * helper.setTo(recipient);
+     * 
+     * String subject = "Product Order Status";
+     * helper.setSubject(subject);
+     * 
+     * helper.setText("Order Status : " + status, true);
+     * 
+     * mailSender.send(message);
+     * 
+     * return true;
+     * }
      */
-    // public Boolean sendMailForProductOrder(ProductOrder order, String status)
-    // throws Exception {
 
-    // System.out.println("===== MAIL METHOD CALLED =====");
-    // System.out.println("MAIL SENDER = " + mailSender);
-    // System.out.println("FROM MAIL = " + fromMail);
+    public Boolean sendMailForProductOrder(ProductOrder order, String status) {
+        System.out.println("Order mail disabled");
+        return true;
+    }
 
-    // System.out.println("MAIL PASSWORD EXISTS = "
-    // + (System.getenv("MAIL_PASSWORD") != null));
-
-    // if (mailSender == null) {
-    // System.out.println("Mail service disabled");
-    // return true;
-    // }
-    // // Defensive checks
-    // if (order == null) {
-    // throw new IllegalArgumentException("Order is required.");
-    // }
-    // if (order.getOrderAddress() == null) {
-    // throw new IllegalArgumentException("Order address is required.");
-    // }
-    // String recipient = order.getOrderAddress().getEmail();
-    // System.out.println("Recipient = " + recipient);
-    // if (recipient == null || recipient.trim().isEmpty()) {
-    // throw new IllegalArgumentException("Recipient email is required in order
-    // address.");
-    // }
-
-    // MimeMessage message = mailSender.createMimeMessage();
-    // MimeMessageHelper helper = new MimeMessageHelper(message);
-    // helper.setFrom(fromMail, "Shopping cart");
-    // helper.setTo(recipient);
-
-    // // local template (won't mutate any class-level state)
-    // String template = "<p>[[name]]</p>"
-    // + "<p>Thank You for ordering...!! Your Order is <b>[[orderStatus]]</b>.</p>"
-    // + "<p><b>Product Details :</b> </p>"
-    // + "<p>Name : [[productName]]</p>"
-    // + "<p>Category : [[category]]</p>"
-    // + "<p>Quantity : [[quantity]]</p>"
-    // + "<p>Price : [[price]]</p>"
-    // + "<p>Payment Type : [[paymentType]]</p>";
-
-    // // category text extraction
-    // String categoryText = "";
-    // try {
-    // if (order.getProduct() != null && order.getProduct().getCategory() != null) {
-    // Object catObj = order.getProduct().getCategory();
-    // if (catObj instanceof com.ecom.model.Category) {
-    // categoryText = ((com.ecom.model.Category) catObj).getName();
-    // } else {
-    // categoryText = String.valueOf(catObj);
-    // }
-    // }
-    // } catch (Exception e) {
-
-    // System.out.println("===== MAIL FAILED =====");
-
-    // System.out.println("ERROR TYPE = " + e.getClass().getName());
-
-    // System.out.println("ERROR MSG = " + e.getMessage());
-
-    // Throwable cause = e.getCause();
-
-    // while (cause != null) {
-    // System.out.println("CAUSE = " + cause.getClass().getName());
-    // System.out.println("CAUSE MSG = " + cause.getMessage());
-    // cause = cause.getCause();
-    // }
-
-    // e.printStackTrace();
-    // }
-
-    // String msg = template.replace("[[name]]",
-    // safeStr(order.getOrderAddress().getFirstName()))
-    // .replace("[[orderStatus]]", status == null ? "" : status)
-    // .replace("[[productName]]", order.getProduct() == null ? "" :
-    // safeStr(order.getProduct().getTitle()))
-    // .replace("[[category]]", safeStr(categoryText))
-    // .replace("[[quantity]]", order.getQuantity() == null ? "0" :
-    // order.getQuantity().toString())
-    // .replace("[[price]]", order.getPrice() == null ? "0.0" :
-    // order.getPrice().toString())
-    // .replace("[[paymentType]]", safeStr(order.getPaymentType()));
-
-    // // subject includes order id/date for traceability
-    // String subject = "Product Order Status";
-    // if (order.getOrderId() != null) {
-    // subject += " - Order: " + order.getOrderId();
-    // }
-    // helper.setSubject(subject);
-    // helper.setText(msg, true); // true => HTML
-    // System.out.println("===== MAIL METHOD CALLED =====");
-    // System.out.println("Recipient : " + recipient);
-    // System.out.println("===== SENDING MAIL =====");
-
-    // try {
-    // System.out.println("HOST = " + host);
-    // System.out.println("PORT = " + port);
-    // System.out.println("FROM = " + fromMail);
-    // System.out.println("STARTING MAIL SEND...");
-    // mailSender.send(message);
-    // System.out.println("===== MAIL SENT SUCCESS =====");
-    // } catch (Exception e) {
-    // System.out.println("===== MAIL FAILED =====");
-    // System.out.println("ERROR TYPE = " + e.getClass().getName());
-    // System.out.println("ERROR MSG = " + e.getMessage());
-    // e.printStackTrace();
-    // }
-
-    // return true;
-    // }
-
-    // helper to avoid NPE on string fields
     private String safeStr(Object o) {
         return o == null ? "" : o.toString();
     }
@@ -205,9 +136,9 @@ public class CommonUtil {
         if (p == null) {
             return null;
         }
+
         String email = p.getName();
-        UserDtls userDtls = userService.getUserByEmail(email);
-        return userDtls;
+        return userService.getUserByEmail(email);
     }
 
 }

@@ -83,6 +83,9 @@ public class CommonUtil {
         System.out.println("MAIL SENDER = " + mailSender);
         System.out.println("FROM MAIL = " + fromMail);
 
+        System.out.println("MAIL PASSWORD EXISTS = "
+                + (System.getenv("MAIL_PASSWORD") != null));
+
         if (mailSender == null) {
             System.out.println("Mail service disabled");
             return true;
@@ -127,7 +130,21 @@ public class CommonUtil {
                 }
             }
         } catch (Exception e) {
-            System.out.println("===== MAIL ERROR =====");
+
+            System.out.println("===== MAIL FAILED =====");
+
+            System.out.println("ERROR TYPE = " + e.getClass().getName());
+
+            System.out.println("ERROR MSG = " + e.getMessage());
+
+            Throwable cause = e.getCause();
+
+            while (cause != null) {
+                System.out.println("CAUSE = " + cause.getClass().getName());
+                System.out.println("CAUSE MSG = " + cause.getMessage());
+                cause = cause.getCause();
+            }
+
             e.printStackTrace();
         }
 
@@ -151,7 +168,6 @@ public class CommonUtil {
         System.out.println("===== SENDING MAIL =====");
 
         try {
-            System.out.println("SMTP HOST = " + System.getProperty("spring.mail.host"));
             System.out.println("STARTING MAIL SEND...");
             mailSender.send(message);
             System.out.println("===== MAIL SENT SUCCESS =====");

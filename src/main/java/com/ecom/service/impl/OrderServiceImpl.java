@@ -98,12 +98,13 @@ public class OrderServiceImpl implements OrderService {
 			order.setOrderAddress(address);
 
 			ProductOrder saveOrder = orderRepository.save(order);
-			try {
-				commonUtil.sendMailForProductOrder(saveOrder, "success");
-			} catch (Exception e) {
+			// try {
+			// commonUtil.sendMailForProductOrder(saveOrder, "success");
+			// } catch (Exception e) {
 
-				e.printStackTrace();
-			}
+			// e.printStackTrace();
+			// }
+
 		}
 
 		// OPTIONAL: clear user's cart after successful order placement

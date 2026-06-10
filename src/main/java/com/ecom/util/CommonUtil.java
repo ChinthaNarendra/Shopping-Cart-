@@ -21,20 +21,20 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class CommonUtil {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    // @Autowired
+    // private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
-    private String fromMail;
+    // @Value("${spring.mail.username}")
+    // private String fromMail;
 
     @Autowired
     private UserService userService;
 
-    @Value("${spring.mail.host}")
-    private String host;
+    // @Value("${spring.mail.host}")
+    // private String host;
 
-    @Value("${spring.mail.port}")
-    private String port;
+    // @Value("${spring.mail.port}")
+    // private String port;
 
     // process to send the mail (password reset)
     public Boolean sendMail(String url, String reciepentEmail)

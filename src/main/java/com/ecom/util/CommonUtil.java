@@ -30,6 +30,12 @@ public class CommonUtil {
     @Autowired
     private UserService userService;
 
+    @Value("${spring.mail.host}")
+    private String host;
+
+    @Value("${spring.mail.port}")
+    private String port;
+
     // process to send the mail (password reset)
     public Boolean sendMail(String url, String reciepentEmail)
             throws UnsupportedEncodingException, MessagingException {
@@ -168,6 +174,9 @@ public class CommonUtil {
         System.out.println("===== SENDING MAIL =====");
 
         try {
+            System.out.println("HOST = " + host);
+            System.out.println("PORT = " + port);
+            System.out.println("FROM = " + fromMail);
             System.out.println("STARTING MAIL SEND...");
             mailSender.send(message);
             System.out.println("===== MAIL SENT SUCCESS =====");

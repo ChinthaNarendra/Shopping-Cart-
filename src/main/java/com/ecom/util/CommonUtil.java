@@ -83,112 +83,118 @@ public class CommonUtil {
      *        public Boolean sendMailForProductOrder(...) { ... }
      *        Also enable async in configuration with @EnableAsync.
      */
-    public Boolean sendMailForProductOrder(ProductOrder order, String status) throws Exception {
+    // public Boolean sendMailForProductOrder(ProductOrder order, String status)
+    // throws Exception {
 
-        System.out.println("===== MAIL METHOD CALLED =====");
-        System.out.println("MAIL SENDER = " + mailSender);
-        System.out.println("FROM MAIL = " + fromMail);
+    // System.out.println("===== MAIL METHOD CALLED =====");
+    // System.out.println("MAIL SENDER = " + mailSender);
+    // System.out.println("FROM MAIL = " + fromMail);
 
-        System.out.println("MAIL PASSWORD EXISTS = "
-                + (System.getenv("MAIL_PASSWORD") != null));
+    // System.out.println("MAIL PASSWORD EXISTS = "
+    // + (System.getenv("MAIL_PASSWORD") != null));
 
-        if (mailSender == null) {
-            System.out.println("Mail service disabled");
-            return true;
-        }
-        // Defensive checks
-        if (order == null) {
-            throw new IllegalArgumentException("Order is required.");
-        }
-        if (order.getOrderAddress() == null) {
-            throw new IllegalArgumentException("Order address is required.");
-        }
-        String recipient = order.getOrderAddress().getEmail();
-        System.out.println("Recipient = " + recipient);
-        if (recipient == null || recipient.trim().isEmpty()) {
-            throw new IllegalArgumentException("Recipient email is required in order address.");
-        }
+    // if (mailSender == null) {
+    // System.out.println("Mail service disabled");
+    // return true;
+    // }
+    // // Defensive checks
+    // if (order == null) {
+    // throw new IllegalArgumentException("Order is required.");
+    // }
+    // if (order.getOrderAddress() == null) {
+    // throw new IllegalArgumentException("Order address is required.");
+    // }
+    // String recipient = order.getOrderAddress().getEmail();
+    // System.out.println("Recipient = " + recipient);
+    // if (recipient == null || recipient.trim().isEmpty()) {
+    // throw new IllegalArgumentException("Recipient email is required in order
+    // address.");
+    // }
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom(fromMail, "Shopping cart");
-        helper.setTo(recipient);
+    // MimeMessage message = mailSender.createMimeMessage();
+    // MimeMessageHelper helper = new MimeMessageHelper(message);
+    // helper.setFrom(fromMail, "Shopping cart");
+    // helper.setTo(recipient);
 
-        // local template (won't mutate any class-level state)
-        String template = "<p>[[name]]</p>"
-                + "<p>Thank You for ordering...!! Your Order is <b>[[orderStatus]]</b>.</p>"
-                + "<p><b>Product Details :</b> </p>"
-                + "<p>Name : [[productName]]</p>"
-                + "<p>Category : [[category]]</p>"
-                + "<p>Quantity : [[quantity]]</p>"
-                + "<p>Price : [[price]]</p>"
-                + "<p>Payment Type : [[paymentType]]</p>";
+    // // local template (won't mutate any class-level state)
+    // String template = "<p>[[name]]</p>"
+    // + "<p>Thank You for ordering...!! Your Order is <b>[[orderStatus]]</b>.</p>"
+    // + "<p><b>Product Details :</b> </p>"
+    // + "<p>Name : [[productName]]</p>"
+    // + "<p>Category : [[category]]</p>"
+    // + "<p>Quantity : [[quantity]]</p>"
+    // + "<p>Price : [[price]]</p>"
+    // + "<p>Payment Type : [[paymentType]]</p>";
 
-        // category text extraction
-        String categoryText = "";
-        try {
-            if (order.getProduct() != null && order.getProduct().getCategory() != null) {
-                Object catObj = order.getProduct().getCategory();
-                if (catObj instanceof com.ecom.model.Category) {
-                    categoryText = ((com.ecom.model.Category) catObj).getName();
-                } else {
-                    categoryText = String.valueOf(catObj);
-                }
-            }
-        } catch (Exception e) {
+    // // category text extraction
+    // String categoryText = "";
+    // try {
+    // if (order.getProduct() != null && order.getProduct().getCategory() != null) {
+    // Object catObj = order.getProduct().getCategory();
+    // if (catObj instanceof com.ecom.model.Category) {
+    // categoryText = ((com.ecom.model.Category) catObj).getName();
+    // } else {
+    // categoryText = String.valueOf(catObj);
+    // }
+    // }
+    // } catch (Exception e) {
 
-            System.out.println("===== MAIL FAILED =====");
+    // System.out.println("===== MAIL FAILED =====");
 
-            System.out.println("ERROR TYPE = " + e.getClass().getName());
+    // System.out.println("ERROR TYPE = " + e.getClass().getName());
 
-            System.out.println("ERROR MSG = " + e.getMessage());
+    // System.out.println("ERROR MSG = " + e.getMessage());
 
-            Throwable cause = e.getCause();
+    // Throwable cause = e.getCause();
 
-            while (cause != null) {
-                System.out.println("CAUSE = " + cause.getClass().getName());
-                System.out.println("CAUSE MSG = " + cause.getMessage());
-                cause = cause.getCause();
-            }
+    // while (cause != null) {
+    // System.out.println("CAUSE = " + cause.getClass().getName());
+    // System.out.println("CAUSE MSG = " + cause.getMessage());
+    // cause = cause.getCause();
+    // }
 
-            e.printStackTrace();
-        }
+    // e.printStackTrace();
+    // }
 
-        String msg = template.replace("[[name]]", safeStr(order.getOrderAddress().getFirstName()))
-                .replace("[[orderStatus]]", status == null ? "" : status)
-                .replace("[[productName]]", order.getProduct() == null ? "" : safeStr(order.getProduct().getTitle()))
-                .replace("[[category]]", safeStr(categoryText))
-                .replace("[[quantity]]", order.getQuantity() == null ? "0" : order.getQuantity().toString())
-                .replace("[[price]]", order.getPrice() == null ? "0.0" : order.getPrice().toString())
-                .replace("[[paymentType]]", safeStr(order.getPaymentType()));
+    // String msg = template.replace("[[name]]",
+    // safeStr(order.getOrderAddress().getFirstName()))
+    // .replace("[[orderStatus]]", status == null ? "" : status)
+    // .replace("[[productName]]", order.getProduct() == null ? "" :
+    // safeStr(order.getProduct().getTitle()))
+    // .replace("[[category]]", safeStr(categoryText))
+    // .replace("[[quantity]]", order.getQuantity() == null ? "0" :
+    // order.getQuantity().toString())
+    // .replace("[[price]]", order.getPrice() == null ? "0.0" :
+    // order.getPrice().toString())
+    // .replace("[[paymentType]]", safeStr(order.getPaymentType()));
 
-        // subject includes order id/date for traceability
-        String subject = "Product Order Status";
-        if (order.getOrderId() != null) {
-            subject += " - Order: " + order.getOrderId();
-        }
-        helper.setSubject(subject);
-        helper.setText(msg, true); // true => HTML
-        System.out.println("===== MAIL METHOD CALLED =====");
-        System.out.println("Recipient : " + recipient);
-        System.out.println("===== SENDING MAIL =====");
+    // // subject includes order id/date for traceability
+    // String subject = "Product Order Status";
+    // if (order.getOrderId() != null) {
+    // subject += " - Order: " + order.getOrderId();
+    // }
+    // helper.setSubject(subject);
+    // helper.setText(msg, true); // true => HTML
+    // System.out.println("===== MAIL METHOD CALLED =====");
+    // System.out.println("Recipient : " + recipient);
+    // System.out.println("===== SENDING MAIL =====");
 
-        try {
-            System.out.println("HOST = " + host);
-            System.out.println("PORT = " + port);
-            System.out.println("FROM = " + fromMail);
-            System.out.println("STARTING MAIL SEND...");
-            mailSender.send(message);
-            System.out.println("===== MAIL SENT SUCCESS =====");
-        } catch (Exception e) {
-            System.out.println("===== MAIL FAILED =====");
-            System.out.println("ERROR TYPE = " + e.getClass().getName());
-            System.out.println("ERROR MSG = " + e.getMessage());
-            e.printStackTrace();
-        }
+    // try {
+    // System.out.println("HOST = " + host);
+    // System.out.println("PORT = " + port);
+    // System.out.println("FROM = " + fromMail);
+    // System.out.println("STARTING MAIL SEND...");
+    // mailSender.send(message);
+    // System.out.println("===== MAIL SENT SUCCESS =====");
+    // } catch (Exception e) {
+    // System.out.println("===== MAIL FAILED =====");
+    // System.out.println("ERROR TYPE = " + e.getClass().getName());
+    // System.out.println("ERROR MSG = " + e.getMessage());
+    // e.printStackTrace();
+    // }
 
-        return true;
-    }
+    // return true;
+    // }
 
     // helper to avoid NPE on string fields
     private String safeStr(Object o) {

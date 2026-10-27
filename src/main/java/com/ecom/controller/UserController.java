@@ -318,7 +318,7 @@ public class UserController {
 		// ensure user.id belongs to logged in user (prevents tampering)
 		if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
 			redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-			return "redirect:user/profile";
+			return "redirect:/user/profile";
 		}
 
 		try {
@@ -333,7 +333,7 @@ public class UserController {
 			redirectAttrs.addFlashAttribute("errorMsg", "Error updating profile: " + ex.getMessage());
 		}
 
-		return "redirect:user/profile";
+		return "redirect:/user/profile";
 	}
 
 	@PostMapping("/change-password")
@@ -353,7 +353,7 @@ public class UserController {
 		// 1️⃣ Check new password = confirm password
 		if (!newPassword.equals(confirmPassword)) {
 			redirectAttrs.addFlashAttribute("pwdError", "New Password and Confirm Password do not match!");
-			return "redirect:user/profile";
+			return "redirect:/user/profile";
 		}
 
 		// 2️⃣ Validate old password
@@ -375,7 +375,7 @@ public class UserController {
 			redirectAttrs.addFlashAttribute("pwdSuccess", "Password updated successfully!");
 		}
 
-		return "redirect:user/profile";
+		return "redirect:/user/profile";
 	}
 
 }

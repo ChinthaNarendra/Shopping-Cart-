@@ -237,7 +237,7 @@ public class UserController {
 
 		if (id == null || st == null) {
 			ra.addFlashAttribute("errorMsg", "Invalid request.");
-			return "redirect:user/user-orders";
+			return "redirect:/user/user-orders";
 		}
 
 		UserDtls loginUser = getLoggedInUserDetails(p);
@@ -249,12 +249,12 @@ public class UserController {
 		ProductOrder order = orderService.getOrderById(id);
 		if (order == null) {
 			ra.addFlashAttribute("errorMsg", "Order not found.");
-			return "redirect:user/user-orders";
+			return "redirect:/user/user-orders";
 		}
 
 		if (order.getUser() == null || !order.getUser().getId().equals(loginUser.getId())) {
 			ra.addFlashAttribute("errorMsg", "You are not authorized to update this order.");
-			return "redirect:user/user-orders";
+			return "redirect:/user/user-orders";
 		}
 
 		String status = null;
@@ -266,12 +266,12 @@ public class UserController {
 		}
 		if (status == null) {
 			ra.addFlashAttribute("errorMsg", "Invalid status selected.");
-			return "redirect:user/user-orders";
+			return "redirect:/user/user-orders";
 		}
 
 		if ("Delivered".equalsIgnoreCase(order.getStatus()) && "Cancelled".equalsIgnoreCase(status)) {
 			ra.addFlashAttribute("errorMsg", "Cannot cancel a delivered order.");
-			return "redirect:user/user-orders";
+			return "redirect:/user/user-orders";
 		}
 
 		ProductOrder updated = orderService.updateOrderStatus(id, status);
@@ -288,7 +288,7 @@ public class UserController {
 		} else {
 			ra.addFlashAttribute("errorMsg", "Status not updated.");
 		}
-		return "redirect:user/user-orders";
+		return "redirect:/user/user-orders";
 	}
 
 	@GetMapping("/profile")

@@ -64,17 +64,26 @@
 									<div class="card shadow p-2 h-100">
 										<div class="card-body text-center d-flex flex-column">
 
-											<div class="mb-3">
-												<img th:if="${p.image != null and p.image != ''}"
-													th:src="@{/uploads/product_img/{img}(img=${p.image})}"
-													th:alt="${p.title}" class="img-fluid"
-													style="width:100%; height:150px; object-fit:cover; border-radius:6px;" />
+											```html
+<div class="mb-3">
 
-												<img th:unless="${p.image != null and p.image != ''}"
-													th:src="@{/uploads/product_img/default.jpg}"
-													th:alt="${p.title} (default)" class="img-fluid"
-													style="width:100%; height:150px; object-fit:cover; border-radius:6px;" />
-											</div>
+    <img th:if="${p.image != null and !p.image.isEmpty()}"
+         th:src="${#strings.startsWith(p.image, 'http')
+                    ? p.image
+                    : '/uploads/product_img/' + p.image}"
+         th:alt="${p.title}"
+         class="img-fluid"
+         style="width:100%; height:150px; object-fit:cover; border-radius:6px;"
+         onerror="this.onerror=null; this.alt='Image unavailable';" />
+
+    <img th:unless="${p.image != null and !p.image.isEmpty()}"
+         th:src="@{/uploads/product_img/default.jpg}"
+         th:alt="${p.title + ' (default)'}"
+         class="img-fluid"
+         style="width:100%; height:150px; object-fit:cover; border-radius:6px;" />
+
+</div>
+```
 
 											<h5 class="card-title" th:text="${p.title}">Product name</h5>
 

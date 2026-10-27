@@ -109,11 +109,14 @@
 								<div class="mb-3">
 									<label>Current Image</label>
 									<div class="mt-2">
-										<img th:src="${product.image != null} ?
-                                                 @{/uploads/product_img-20251106T053440Z-1-001/product_img/{img}(img=${product.image})} :
-                                                 @{/uploads/product_img-20251106T053440Z-1-001/product_img/default.jpg}"
+										<img th:if="${product.image != null and !product.image.isEmpty()}"
+											th:src="@{/uploads/product_img/{img}(img=${product.image})}"
 											th:alt="${product.title}" width="140" height="140"
 											style="object-fit:cover; border-radius:6px;" />
+
+										<img th:unless="${product.image != null and !product.image.isEmpty()}"
+											th:src="@{/images/default.jpg}" th:alt="${product.title}" width="140"
+											height="140" style="object-fit:cover; border-radius:6px;" />
 									</div>
 								</div>
 

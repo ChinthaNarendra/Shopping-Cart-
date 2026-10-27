@@ -42,13 +42,17 @@
 							<tr th:each="cart, stat : ${carts}">
 								<th scope="row" th:text="${stat.count}">1</th>
 
+								
 								<td class="text-center">
-									<img th:src="${cart.product.image != null} ?
-                                              @{/uploads/product_img/{img}(img=${cart.product.image})} :
-                                              @{/uploads/product_img/default.jpg}"
-										th:alt="${cart.product.title}" width="60" height="60"
-										style="object-fit:cover; border-radius:6px;" />
+									<img th:src="${cart.product.image != null and !cart.product.image.isEmpty()
+                    ? (#strings.startsWith(cart.product.image, 'http')
+                        ? cart.product.image
+                        : '/uploads/product_img/' + cart.product.image)
+                    : '/uploads/product_img/default.jpg'}" th:alt="${cart.product.title}" width="60" height="60"
+										style="object-fit:cover; border-radius:6px;"
+										onerror="this.onerror=null; this.src='/uploads/product_img/default.jpg';" />
 								</td>
+								
 
 								<td th:text="${cart.product.title}">Product title</td>
 

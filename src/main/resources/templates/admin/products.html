@@ -58,18 +58,18 @@
 								<th scope="row" th:text="${stat.count}">1</th>
 
 								
-								<td class="text-center">
 								
-									<img th:if="${p.image != null and !p.image.isEmpty()}" th:src="${#strings.startsWith(p.image, 'http')
-								                     ? p.image
-								                     : '/uploads/product_img/' + p.image}" th:alt="${p.title}"
-										onerror="this.onerror=null; this.src='/uploads/product_img/default.jpg';" width="60" height="60"
-										style="object-fit:cover; border-radius:6px;" />
-								
-									<img th:unless="${p.image != null and !p.image.isEmpty()}" th:src="@{/uploads/product_img/default.jpg}"
-										th:alt="${p.title} (default)" width="60" height="60" style="object-fit:cover; border-radius:6px;" />
-								
-								</td>
+<td class="text-center">
+	<img th:if="${p.image != null and !p.image.isEmpty()}" th:src="${#strings.startsWith(p.image, 'http')
+                    ? p.image
+                    : '/uploads/product_img/' + p.image}" th:alt="${p.title}" width="60" height="60"
+		style="object-fit: cover; border-radius: 6px;"
+		onerror="this.onerror=null; this.src='/uploads/product_img/default.jpg';" />
+
+	<img th:unless="${p.image != null and !p.image.isEmpty()}" th:src="@{/uploads/product_img/default.jpg}"
+		th:alt="${p.title + ' (default)'}" width="60" height="60" style="object-fit: cover; border-radius: 6px;" />
+</td>
+
 								
 
 								<td th:text="${p.title}">Product title</td>

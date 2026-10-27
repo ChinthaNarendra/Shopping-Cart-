@@ -637,7 +637,7 @@ public class AdminController {
 	        try {
 	            if (user == null) {
 	                redirectAttrs.addFlashAttribute("errorMsg", "Form data missing.");
-	                return "redirect:/admin/add-admin";
+	                return "redirect:admin/add-admin";
 	            }
 
 	            // helper to test empty strings
@@ -654,7 +654,7 @@ public class AdminController {
 
 	                redirectAttrs.addFlashAttribute("errorMsg", "Please fill all required fields.");
 	                redirectAttrs.addFlashAttribute("user", user);
-	                return "redirect:/admin/add-admin";
+	                return "redirect:admin/add-admin";
 	            }
 
 	            // password match
@@ -663,20 +663,20 @@ public class AdminController {
 	            if (!pwd.equals(cpw)) {
 	                redirectAttrs.addFlashAttribute("errorMsg", "Password and Confirm Password do not match.");
 	                redirectAttrs.addFlashAttribute("user", user);
-	                return "redirect:/admin/add-admin";
+	                return "redirect:admin/add-admin";
 	            }
 
 	            // file presence & basic validation (UI required file; but if you want optional make this conditional)
 	            if (file == null || file.isEmpty()) {
 	                redirectAttrs.addFlashAttribute("errorMsg", "Please upload a profile image.");
 	                redirectAttrs.addFlashAttribute("user", user);
-	                return "redirect:/admin/add-admin";
+	                return "redirect:dmin/add-admin";
 	            }
 
 	            if (file.getSize() > MAX_FILE_BYTES) {
 	                redirectAttrs.addFlashAttribute("errorMsg", "Profile image too large. Max allowed is 5 MB.");
 	                redirectAttrs.addFlashAttribute("user", user);
-	                return "redirect:/admin/add-admin";
+	                return "redirect:admin/add-admin";
 	            }
 
 	            String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
@@ -691,7 +691,7 @@ public class AdminController {
 	            if (original.contains("..")) {
 	                redirectAttrs.addFlashAttribute("errorMsg", "Invalid file name.");
 	                redirectAttrs.addFlashAttribute("user", user);
-	                return "redirect:/admin/add-admin";
+	                return "redirect:admin/add-admin";
 	            }
 
 	            // store file in uploads/profile_img/<uuid>.<ext>
@@ -739,7 +739,7 @@ public class AdminController {
 	    
 	    @GetMapping("/profile")
 	    public String profile() {
-	    	return "/admin/profile";
+	    	return "admin/profile";
 	    }
 	    
 	    
@@ -768,7 +768,7 @@ public class AdminController {
 	        // Prevent users from modifying another user's profile.
 	        if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
 	            redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-	            return "redirect:/admin/profile";
+	            return "redirect:admin/profile";
 	        }
 
 	        try {
@@ -787,7 +787,7 @@ public class AdminController {
 	                    "Error updating profile. Please try again.");
 	        }
 
-	        return "redirect:/admin/profile";
+	        return "redirect:admin/profile";
 	    }
 
 		@PostMapping("/change-password")
@@ -807,14 +807,14 @@ public class AdminController {
 		    // 1️⃣ Check new password = confirm password
 		    if (!newPassword.equals(confirmPassword)) {
 		        redirectAttrs.addFlashAttribute("pwdError", "New Password and Confirm Password do not match!");
-		        return "redirect:/admin/profile";
+		        return "redirect:admin/profile";
 		    }
 
 		    // 2️⃣ Validate old password
 		    boolean matches = passwordEncoder.matches(currentPassword, loggedInUser.getPassword());
 		    if (!matches) {
 		        redirectAttrs.addFlashAttribute("pwdError", "Current password is incorrect!");
-		        return "redirect:/admin/profile";
+		        return "redirect:admin/profile";
 		    }
 
 		    // 3️⃣ Update password
@@ -829,7 +829,7 @@ public class AdminController {
 		        redirectAttrs.addFlashAttribute("pwdSuccess", "Password updated successfully!");
 		    }
 
-		    return "redirect:/admin/profile";
+		    return "redirect:admin/profile";
 		}
 
 }

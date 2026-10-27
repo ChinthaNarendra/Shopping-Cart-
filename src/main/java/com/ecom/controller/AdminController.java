@@ -768,7 +768,7 @@ public class AdminController {
 	        // Prevent users from modifying another user's profile.
 	        if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
 	            redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-	            return "redirect:admin/profile";
+	            return "redirect:/admin/profile";
 	        }
 
 	        try {
@@ -787,7 +787,7 @@ public class AdminController {
 	                    "Error updating profile. Please try again.");
 	        }
 
-	        return "redirect:admin/profile";
+	        return "redirect:/admin/profile";
 	    }
 
 		@PostMapping("/change-password")

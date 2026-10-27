@@ -48,28 +48,33 @@
 								<tr th:each="u, stat : ${users}">
 									<th scope="row" th:text="${stat.count}">1</th>
 
-									<td class="text-center">
-										<!-- only attempt when profileImage is non-empty -->
-										<th:block th:if="${u.profileImage != null and u.profileImage != ''}">
+									
+<td class="text-center">
 
-											<!-- if DB already contains folder "profile_img/..." use it as-is -->
-											<img th:if="${#strings.contains(u.profileImage,'profile_img/')}"
-												th:src="@{/uploads/{file}(file=${u.profileImage})}" th:alt="${u.name}"
-												width="60" height="60" style="object-fit:cover; border-radius:6px;" />
+	<!-- Cloudinary image URL -->
+	<th:block th:if="${u.profileImage != null and !#strings.isEmpty(u.profileImage)}">
 
-											<!-- otherwise prefix profile_img/ -->
-											<img th:unless="${#strings.contains(u.profileImage,'profile_img/')}"
-												th:src="@{/uploads/profile_img/{img}(img=${u.profileImage})}"
-												th:alt="${u.name}" width="60" height="60"
-												style="object-fit:cover; border-radius:6px;" />
+		<!-- If profileImage is already a URL, use it directly -->
+		<img th:if="${#strings.startsWith(u.profileImage, 'http')}" th:src="${u.profileImage}" th:alt="${u.name}"
+			width="60" height="60" style="object-fit: cover; border-radius: 6px;"
+			onerror="this.onerror=null; this.src='/uploads/profile_img/default.jpg';" />
 
-										</th:block>
+		<!-- Legacy local image stored as profile_img/filename -->
+		<img th:unless="${#strings.startsWith(u.profileImage, 'http')}" th:src="${#strings.contains(u.profileImage, 'profile_img/')
+                      ? '/uploads/' + u.profileImage
+                      : '/uploads/profile_img/' + u.profileImage}" th:alt="${u.name}" width="60" height="60"
+			style="object-fit: cover; border-radius: 6px;"
+			onerror="this.onerror=null; this.src='/uploads/profile_img/default.jpg';" />
 
-										<!-- fallback default image -->
-										<img th:if="${u.profileImage == null or u.profileImage == ''}"
-											th:src="@{/uploads/profile_img/default.jpg}" th:alt="${u.name}" width="60"
-											height="60" style="object-fit:cover; border-radius:6px;" />
-									</td>
+	</th:block>
+
+	<!-- Default image if no profile image exists -->
+	<img th:if="${u.profileImage == null or #strings.isEmpty(u.profileImage)}"
+		th:src="@{/uploads/profile_img/default.jpg}" th:alt="${u.name}" width="60" height="60"
+		style="object-fit: cover; border-radius: 6px;" />
+
+</td>
+
 
 									<td th:text="${u.name}">Name</td>
 									<td th:text="${u.email}">email@example.com</td>

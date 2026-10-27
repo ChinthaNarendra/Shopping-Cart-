@@ -20,13 +20,21 @@
 						<p class="alert alert-danger text-center " th:text="${errorMsg}"></p>
 					</th:block>
 
-					<!-- ✅ Product Image -->
+					<!-- Product Image -->
 					<div class="col-md-6 text-center">
-						<img th:src="${product.image != null} ?
-                                 @{/uploads/product_img/{img}(img=${product.image})} :
-                                 @{/uploads/product_img/default.jpg}"
-							th:alt="${product.title}" width="400px" height="400px"
-							style=" border-radius: 8px;" />
+
+						<!-- Cloudinary URL or legacy local image -->
+						<img th:if="${product.image != null and !product.image.isEmpty()}" th:src="${#strings.startsWith(product.image, 'http') 
+                    ? product.image 
+                    : '/uploads/product_img/' + product.image}" th:alt="${product.title}" class="img-fluid"
+							style="width:400px; height:400px; object-fit:contain; border-radius:8px;"
+							onerror="this.onerror=null; this.src='/uploads/product_img/default.jpg';" />
+
+						<!-- Default image -->
+						<img th:unless="${product.image != null and !product.image.isEmpty()}"
+							th:src="@{/uploads/product_img/default.jpg}" th:alt="${product.title}" class="img-fluid"
+							style="width:400px; height:400px; object-fit:contain; border-radius:8px;" />
+
 					</div>
 
 					<!-- ✅ Product Details -->

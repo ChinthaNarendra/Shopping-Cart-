@@ -504,7 +504,7 @@ public class AdminController {
 	    }
 	    m.addAttribute("userType", type);
 	    m.addAttribute("users", users);
-	    return "/admin/users";
+	    return "admin/users";
 	}
 
 	@GetMapping("/updateSts")

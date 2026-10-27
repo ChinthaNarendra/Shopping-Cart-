@@ -51,3 +51,11 @@ src/main/resources/application.properties
 
 *.tmp
 
+.metadata/
+.factorypath
+Shopping-Cart-.git-backup/
+HELP.md
+
+.env
+.env.*
+!.env.example

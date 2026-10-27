@@ -14,13 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.UserDtls;
 import com.ecom.repository.UserRepository;
+import com.ecom.service.CloudinaryService;
 import com.ecom.service.UserService;
 import com.ecom.util.AppConstant;
-import org.springframework.util.StringUtils;
 
 
 @Service
@@ -31,6 +32,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     /**
      * Save a new user with safe defaults.
@@ -172,86 +176,51 @@ public class UserServiceImpl implements UserService {
  // import java.util.UUID;
  // import org.springframework.util.StringUtils;
 
- @Override
- public UserDtls updateUserProfile(UserDtls user, MultipartFile img) {
-     Optional<UserDtls> optDb = userRepository.findById(user.getId());
-     if (!optDb.isPresent()) {
-         return null; // or throw an exception
-     }
+    @Override
+    public UserDtls updateUserProfile(UserDtls user, MultipartFile img) {
 
-     UserDtls dbUser = optDb.get();
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("Invalid user ID.");
+        }
 
-     // --- update editable fields ---
-     dbUser.setName(user.getName());
-     dbUser.setMobileNumber(user.getMobileNumber());
-     dbUser.setAddress(user.getAddress());
-     dbUser.setCity(user.getCity());
-     dbUser.setPinCode(user.getPinCode());
-     dbUser.setState(user.getState());
+        Optional<UserDtls> optDb = userRepository.findById(user.getId());
 
-     // Handle image upload (if provided)
-     if (img != null && !img.isEmpty()) {
-         // Basic validation: size and content type (tweak as needed)
-         long maxSizeBytes = 5L * 1024L * 1024L; // 5 MB
-         String contentType = img.getContentType() == null ? "" : img.getContentType().toLowerCase();
-         if (img.getSize() > maxSizeBytes) {
-             throw new IllegalArgumentException("File too large. Max 5MB allowed.");
-         }
-         if (!(contentType.contains("image"))) {
-             throw new IllegalArgumentException("Only image files are allowed.");
-         }
+        if (optDb.isEmpty()) {
+            return null;
+        }
 
-         try {
-             // ensure uploads/profile_img exists
-             Path uploadsDir = Paths.get("uploads", "profile_img").toAbsolutePath();
-             if (!Files.exists(uploadsDir)) {
-                 Files.createDirectories(uploadsDir);
-             }
+        UserDtls dbUser = optDb.get();
 
-             // generate unique filename
-             String original = StringUtils.cleanPath(img.getOriginalFilename());
-             String ext = "";
-             int dot = original.lastIndexOf('.');
-             if (dot >= 0) ext = original.substring(dot);
+        // Update editable profile fields
+        dbUser.setName(user.getName());
+        dbUser.setMobileNumber(user.getMobileNumber());
+        dbUser.setAddress(user.getAddress());
+        dbUser.setCity(user.getCity());
+        dbUser.setPinCode(user.getPinCode());
+        dbUser.setState(user.getState());
 
-             String filename = UUID.randomUUID().toString() + ext;
+        // Upload profile image to Cloudinary only when a new image is selected
+        if (img != null && !img.isEmpty()) {
 
-             // target path
-             Path target = uploadsDir.resolve(filename);
+            try {
+                String imageUrl = cloudinaryService.uploadImage(
+                        img,
+                        "shopping-cart/profiles"
+                );
 
-             // copy file (replace if exists)
-             Files.copy(img.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+                // Store the Cloudinary secure URL in the database
+                dbUser.setProfileImage(imageUrl);
 
-             // delete old file if present (and not default placeholder)
-             if (dbUser.getProfileImage() != null && !dbUser.getProfileImage().isBlank()) {
-                 // dbUser.profileImage is stored as e.g. "profile_img/<file>"
-                 String existing = dbUser.getProfileImage();
-                 // only delete if stored in uploads/profile_img
-                 if (existing.startsWith("profile_img/")) {
-                     Path old = Paths.get("uploads").resolve(existing).toAbsolutePath();
-                     try {
-                         Files.deleteIfExists(old);
-                     } catch (Exception ex) {
-                         // log and continue - do not fail the update because old file couldn't be deleted
-                         ex.printStackTrace();
-                     }
-                 }
-             }
+            } catch (IOException ex) {
+                throw new RuntimeException(
+                        "Failed to upload profile image to Cloudinary.", ex
+                );
+            }
+        }
 
-             // store relative path in DB so Thymeleaf resolves to /uploads/<relative>
-             dbUser.setProfileImage("profile_img/" + filename);
-
-         } catch (IOException ioe) {
-             // log error and rethrow or return null based on your error strategy
-             ioe.printStackTrace();
-             throw new RuntimeException("Failed to store profile image.", ioe);
-         }
-     }
-
-     // save DB changes
-     dbUser = userRepository.save(dbUser);
-     return dbUser;
- }
+        // Save profile changes
+        return userRepository.save(dbUser);
+    }
 
 @Override
 public UserDtls saveAdmin(UserDtls user) {

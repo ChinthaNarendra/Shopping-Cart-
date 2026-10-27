@@ -1,6 +1,7 @@
 package com.ecom.controller;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +42,8 @@ import com.ecom.util.OrderStatus;
 
 import jakarta.servlet.http.HttpSession;
 
+import com.ecom.service.CloudinaryService;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -65,6 +68,9 @@ public class AdminController {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private CloudinaryService cloudinaryService;
 	
 	private static final long MAX_FILE_BYTES = 5L * 1024L * 1024L;
 	
@@ -125,57 +131,60 @@ public class AdminController {
 
 
 	@PostMapping("/saveCategory")
-	public String saveCategory(@ModelAttribute Category category,
-			@RequestParam(value = "file", required = false) MultipartFile file, RedirectAttributes redirectAttrs) {
+	public String saveCategory(
+	        @ModelAttribute Category category,
+	        @RequestParam(value = "file", required = false) MultipartFile file,
+	        RedirectAttributes redirectAttrs) {
 
-		try {
-			Path base = Paths.get(uploadDir).toAbsolutePath();
-			Files.createDirectories(base);
+	    try {
+	        String imageUrl = "default.jpg";
 
-			Path saveDir = base.resolve("category_img");
-			Files.createDirectories(saveDir);
+	        if (file != null && !file.isEmpty()) {
 
-			String imageName = "default.jpg";
-			if (file != null && !file.isEmpty()) {
+	            if (file.getSize() > MAX_FILE_BYTES) {
+	                redirectAttrs.addFlashAttribute(
+	                        "errorMsg",
+	                        "Uploaded file too large. Max allowed: 5 MB.");
+	                redirectAttrs.addFlashAttribute("category", category);
+	                return "redirect:/admin/category";
+	            }
 
-				// validate size
-				if (file.getSize() > MAX_FILE_BYTES) {
-					redirectAttrs.addFlashAttribute("errorMsg", "Uploaded file too large. Max allowed: 5 MB.");
-					redirectAttrs.addFlashAttribute("category", category);
-					return "redirect:/admin/category";
-				}
+	            String contentType = file.getContentType() == null
+	                    ? ""
+	                    : file.getContentType().toLowerCase();
 
-				// validate content type
-				String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
-				if (!contentType.startsWith("image/")) {
-					redirectAttrs.addFlashAttribute("errorMsg", "Invalid file type. Please upload an image.");
-					redirectAttrs.addFlashAttribute("category", category);
-					return "redirect:/admin/category";
-				}
+	            if (!contentType.startsWith("image/")) {
+	                redirectAttrs.addFlashAttribute(
+	                        "errorMsg",
+	                        "Invalid file type. Please upload an image.");
+	                redirectAttrs.addFlashAttribute("category", category);
+	                return "redirect:/admin/category";
+	            }
 
-				String original = StringUtils.cleanPath(file.getOriginalFilename());
-				String ext = "";
-				if (original != null && original.contains(".")) {
-					ext = original.substring(original.lastIndexOf('.'));
-				}
-				imageName = UUID.randomUUID().toString() + ext;
-				Path targetPath = saveDir.resolve(imageName);
-				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-			}
+	            imageUrl = cloudinaryService.uploadImage(
+	                    file, "shopping-cart/categories");
+	        }
 
-			category.setImageName(imageName);
-			if (category.getActive() == null) {
-				category.setActive(Boolean.TRUE);
-			}
+	        category.setImageName(imageUrl);
 
-			categoryService.saveCategory(category);
-			redirectAttrs.addFlashAttribute("succMsg", "Category saved successfully!");
-		} catch (IOException e) {
-			e.printStackTrace();
-			redirectAttrs.addFlashAttribute("errorMsg", "Error saving category: " + e.getMessage());
-		}
+	        if (category.getActive() == null) {
+	            category.setActive(Boolean.TRUE);
+	        }
 
-		return "redirect:/admin/category";
+	        categoryService.saveCategory(category);
+
+	        redirectAttrs.addFlashAttribute(
+	                "succMsg", "Category saved successfully!");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+
+	        redirectAttrs.addFlashAttribute(
+	                "errorMsg",
+	                "Error saving category. Please check Cloudinary configuration and try again.");
+	    }
+
+	    return "redirect:/admin/category";
 	}
 
 	/**
@@ -207,63 +216,65 @@ public class AdminController {
 	}
 
 	@PostMapping("/updateCategory")
-	public String updateCategory(@ModelAttribute Category category,
-			@RequestParam(value = "file", required = false) MultipartFile file, RedirectAttributes ra) {
-		try {
-			Category existing = categoryService.getCategoryById(category.getId());
-			if (existing == null) {
-				ra.addFlashAttribute("errorMsg", "Category not found.");
-				return "redirect:/admin/category";
-			}
+	public String updateCategory(
+	        @ModelAttribute Category category,
+	        @RequestParam(value = "file", required = false) MultipartFile file,
+	        RedirectAttributes ra) {
 
-			existing.setName(category.getName());
-			existing.setActive(category.getActive() == null ? Boolean.TRUE : category.getActive());
+	    try {
+	        Category existing = categoryService.getCategoryById(category.getId());
 
-			if (file != null && !file.isEmpty()) {
+	        if (existing == null) {
+	            ra.addFlashAttribute("errorMsg", "Category not found.");
+	            return "redirect:/admin/category";
+	        }
 
-				// validate size
-				if (file.getSize() > MAX_FILE_BYTES) {
-					ra.addFlashAttribute("errorMsg", "Uploaded file too large. Max allowed: 5 MB.");
-					ra.addFlashAttribute("category", category);
-					return "redirect:/admin/category";
-				}
+	        existing.setName(category.getName());
+	        existing.setActive(
+	                category.getActive() == null
+	                        ? Boolean.TRUE
+	                        : category.getActive());
 
-				// validate content type
-				String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
-				if (!contentType.startsWith("image/")) {
-					ra.addFlashAttribute("errorMsg", "Invalid file type. Please upload an image.");
-					ra.addFlashAttribute("category", category);
-					return "redirect:/admin/category";
-				}
+	        if (file != null && !file.isEmpty()) {
 
-				Path base = Paths.get(uploadDir).toAbsolutePath();
+	            if (file.getSize() > MAX_FILE_BYTES) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Uploaded file too large. Max allowed: 5 MB.");
+	                return "redirect:/admin/editCategory/" + category.getId();
+	            }
 
-				Path saveDir = base.resolve("category_img");
-				Files.createDirectories(saveDir);
+	            String contentType = file.getContentType() == null
+	                    ? ""
+	                    : file.getContentType().toLowerCase();
 
-				String original = StringUtils.cleanPath(file.getOriginalFilename());
-				String ext = "";
-				if (original != null && original.contains(".")) {
-					ext = original.substring(original.lastIndexOf('.'));
-				}
-				String newImageName = UUID.randomUUID().toString() + ext;
-				Path target = saveDir.resolve(newImageName);
-				Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+	            if (!contentType.startsWith("image/")) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Invalid file type. Please upload an image.");
+	                return "redirect:/admin/editCategory/" + category.getId();
+	            }
 
-				if (existing.getImageName() != null && !existing.getImageName().equals("default.jpg")) {
-					Files.deleteIfExists(saveDir.resolve(existing.getImageName()));
-				}
+	            String imageUrl = cloudinaryService.uploadImage(
+	                    file, "shopping-cart/categories");
 
-				existing.setImageName(newImageName);
-			}
+	            existing.setImageName(imageUrl);
+	        }
 
-			categoryService.saveCategory(existing);
-			ra.addFlashAttribute("succMsg", "Category updated successfully.");
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("errorMsg", "Error updating category: " + e.getMessage());
-		}
-		return "redirect:/admin/category";
+	        categoryService.saveCategory(existing);
+
+	        ra.addFlashAttribute(
+	                "succMsg", "Category updated successfully.");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+
+	        ra.addFlashAttribute(
+	                "errorMsg",
+	                "Error updating category. Please check Cloudinary configuration and try again.");
+	    }
+
+	    return "redirect:/admin/category";
 	}
 
 	// ---------- PRODUCT MANAGEMENT ----------
@@ -278,59 +289,63 @@ public class AdminController {
 	}
 
 	@PostMapping("/saveProduct")
-	public String saveProduct(@ModelAttribute Product product,
-			@RequestParam(value = "file", required = false) MultipartFile file, RedirectAttributes ra) {
-		String imageName = "default.jpg";
+	public String saveProduct(
+	        @ModelAttribute Product product,
+	        @RequestParam(value = "file", required = false) MultipartFile file,
+	        RedirectAttributes ra) {
 
-		try {
-			Path base = Paths.get(uploadDir).toAbsolutePath();
+	    try {
+	        String imageUrl = "default.jpg";
 
-			Files.createDirectories(base);
-			Path saveDir = base.resolve("product_img");
-			Files.createDirectories(saveDir);
+	        if (file != null && !file.isEmpty()) {
 
-			if (file != null && !file.isEmpty()) {
+	            if (file.getSize() > MAX_FILE_BYTES) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Uploaded file too large. Max allowed: 5 MB.");
+	                ra.addFlashAttribute("product", product);
+	                return "redirect:/admin/loadAddProduct";
+	            }
 
-				// validate size
-				if (file.getSize() > MAX_FILE_BYTES) {
-					ra.addFlashAttribute("errorMsg", "Uploaded file too large. Max allowed: 5 MB.");
-					ra.addFlashAttribute("product", product);
-					return "redirect:/admin/loadAddProduct";
-				}
+	            String contentType = file.getContentType() == null
+	                    ? ""
+	                    : file.getContentType().toLowerCase();
 
-				// validate content type
-				String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
-				if (!contentType.startsWith("image/")) {
-					ra.addFlashAttribute("errorMsg", "Invalid file type. Please upload an image.");
-					ra.addFlashAttribute("product", product);
-					return "redirect:/admin/loadAddProduct";
-				}
+	            if (!contentType.startsWith("image/")) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Invalid file type. Please upload an image.");
+	                ra.addFlashAttribute("product", product);
+	                return "redirect:/admin/loadAddProduct";
+	            }
 
-				String original = StringUtils.cleanPath(file.getOriginalFilename());
-				String ext = "";
-				if (original != null && original.contains(".")) {
-					ext = original.substring(original.lastIndexOf('.'));
-				}
+	            imageUrl = cloudinaryService.uploadImage(
+	                    file, "shopping-cart/products");
+	        }
 
-				imageName = UUID.randomUUID().toString() + ext;
-				Path targetPath = saveDir.resolve(imageName);
-				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-			}
+	        product.setImage(imageUrl);
 
-			product.setImage(imageName);
-			if (product.getIsActive() == null)
-				product.setIsActive(Boolean.TRUE);
+	        if (product.getIsActive() == null) {
+	            product.setIsActive(Boolean.TRUE);
+	        }
 
-			computeAndSetDiscountPrice(product);
+	        // Preserve existing discount calculation
+	        computeAndSetDiscountPrice(product);
 
-			productService.saveProduct(product);
-			ra.addFlashAttribute("succMsg", "Product saved successfully!");
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("errorMsg", "Error saving product: " + e.getMessage());
-		}
+	        productService.saveProduct(product);
 
-		return "redirect:/admin/loadAddProduct";
+	        ra.addFlashAttribute(
+	                "succMsg", "Product saved successfully!");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+
+	        ra.addFlashAttribute(
+	                "errorMsg",
+	                "Error saving product. Please check Cloudinary configuration and try again.");
+	    }
+
+	    return "redirect:/admin/loadAddProduct";
 	}
 
 	@GetMapping("/products")
@@ -386,72 +401,75 @@ public class AdminController {
 	}
 
 	@PostMapping("/updateProduct")
-	public String updateProduct(@ModelAttribute Product product,
-			@RequestParam(value = "file", required = false) MultipartFile file, RedirectAttributes ra) {
-		try {
-			Product existing = productService.getproductById(product.getId());
-			if (existing == null) {
-				ra.addFlashAttribute("errorMsg", "Product not found.");
-				return "redirect:/admin/products";
-			}
+	public String updateProduct(
+	        @ModelAttribute Product product,
+	        @RequestParam(value = "file", required = false) MultipartFile file,
+	        RedirectAttributes ra) {
 
-			existing.setTitle(product.getTitle());
-			existing.setDescription(product.getDescription());
-			existing.setCategory(product.getCategory());
-			existing.setPrice(product.getPrice());
-			existing.setStock(product.getStock());
-			existing.setDiscount(product.getDiscount());
-			existing.setIsActive(product.getIsActive() == null ? Boolean.TRUE : product.getIsActive());
+	    try {
+	        Product existing = productService.getproductById(product.getId());
 
-			if (file != null && !file.isEmpty()) {
+	        if (existing == null) {
+	            ra.addFlashAttribute("errorMsg", "Product not found.");
+	            return "redirect:/admin/products";
+	        }
 
-				// validate size
-				if (file.getSize() > MAX_FILE_BYTES) {
-					ra.addFlashAttribute("errorMsg", "Uploaded file too large. Max allowed: 5 MB.");
-					ra.addFlashAttribute("product", product);
-					return "redirect:/admin/products";
-				}
+	        existing.setTitle(product.getTitle());
+	        existing.setDescription(product.getDescription());
+	        existing.setCategory(product.getCategory());
+	        existing.setPrice(product.getPrice());
+	        existing.setStock(product.getStock());
+	        existing.setDiscount(product.getDiscount());
 
-				// validate content type
-				String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
-				if (!contentType.startsWith("image/")) {
-					ra.addFlashAttribute("errorMsg", "Invalid file type. Please upload an image.");
-					ra.addFlashAttribute("product", product);
-					return "redirect:/admin/products";
-				}
+	        existing.setIsActive(
+	                product.getIsActive() == null
+	                        ? Boolean.TRUE
+	                        : product.getIsActive());
 
-				Path base = Paths.get(uploadDir).toAbsolutePath();
+	        // If no new image is selected, keep the existing image URL.
+	        if (file != null && !file.isEmpty()) {
 
-				Path saveDir = base.resolve("product_img");
-				Files.createDirectories(saveDir);
+	            if (file.getSize() > MAX_FILE_BYTES) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Uploaded file too large. Max allowed: 5 MB.");
+	                return "redirect:/admin/editProduct/" + product.getId();
+	            }
 
-				String original = StringUtils.cleanPath(file.getOriginalFilename());
-				String ext = "";
-				if (original != null && original.contains(".")) {
-					ext = original.substring(original.lastIndexOf('.'));
-				}
-				String newImageName = UUID.randomUUID().toString() + ext;
+	            String contentType = file.getContentType() == null
+	                    ? ""
+	                    : file.getContentType().toLowerCase();
 
-				Path target = saveDir.resolve(newImageName);
-				Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+	            if (!contentType.startsWith("image/")) {
+	                ra.addFlashAttribute(
+	                        "errorMsg",
+	                        "Invalid file type. Please upload an image.");
+	                return "redirect:/admin/editProduct/" + product.getId();
+	            }
 
-				if (existing.getImage() != null && !existing.getImage().equals("default.jpg")) {
-					Files.deleteIfExists(saveDir.resolve(existing.getImage()));
-				}
+	            String imageUrl = cloudinaryService.uploadImage(
+	                    file, "shopping-cart/products");
 
-				existing.setImage(newImageName);
-			}
+	            existing.setImage(imageUrl);
+	        }
 
-			computeAndSetDiscountPrice(existing);
+	        // Preserve existing discount calculation
+	        computeAndSetDiscountPrice(existing);
 
-			productService.saveProduct(existing);
-			ra.addFlashAttribute("succMsg", "Product updated successfully!");
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("errorMsg", "Error updating product: " + e.getMessage());
-		}
+	        productService.saveProduct(existing);
 
-		return "redirect:/admin/products";
+	        ra.addFlashAttribute(
+	                "succMsg", "Product updated successfully!");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+
+	        ra.addFlashAttribute(
+	                "errorMsg",
+	                "Error updating product. Please check Cloudinary configuration and try again.");
+	    }
+
+	    return "redirect:/admin/products";
 	}
 
 	// ---------- Helper ----------
@@ -727,43 +745,50 @@ public class AdminController {
 	    
 	    
 	    @PostMapping("/update-profile")
-		public String updateProfile(@ModelAttribute("user") UserDtls user,
-				@RequestParam(name = "imageFile", required = false) MultipartFile imageFile, Principal principal,
-				RedirectAttributes redirectAttrs) {
+	    public String updateProfile(
+	            @ModelAttribute("user") UserDtls user,
+	            @RequestParam(name = "imageFile", required = false) MultipartFile imageFile,
+	            Principal principal,
+	            RedirectAttributes redirectAttrs) {
 
-			// require login
-			if (principal == null) {
-				redirectAttrs.addFlashAttribute("errorMsg", "You must be logged in to update profile.");
-				return "redirect:/login";
-			}
+	        if (principal == null) {
+	            redirectAttrs.addFlashAttribute("errorMsg",
+	                    "You must be logged in to update profile.");
+	            return "redirect:/login";
+	        }
 
-			String loggedEmail = principal.getName();
-			UserDtls loggedUser = userService.getUserByEmail(loggedEmail);
-			if (loggedUser == null) {
-				redirectAttrs.addFlashAttribute("errorMsg", "User not found.");
-				return "redirect:/login";
-			}
+	        String loggedEmail = principal.getName();
+	        UserDtls loggedUser = userService.getUserByEmail(loggedEmail);
 
-			// ensure user.id belongs to logged in user (prevents tampering)
-			if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
-				redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-				return "redirect:/admin/profile";
-			}
+	        if (loggedUser == null) {
+	            redirectAttrs.addFlashAttribute("errorMsg", "User not found.");
+	            return "redirect:/login";
+	        }
 
-			try {
-				UserDtls updated = userService.updateUserProfile(user, imageFile);
-				if (updated == null) {
-					redirectAttrs.addFlashAttribute("errorMsg", "Profile update failed.");
-				} else {
-					redirectAttrs.addFlashAttribute("succMsg", "Profile updated successfully.");
-				}
-			} catch (Exception ex) {
-				// log ex in real app
-				redirectAttrs.addFlashAttribute("errorMsg", "Error updating profile: " + ex.getMessage());
-			}
+	        // Prevent users from modifying another user's profile.
+	        if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
+	            redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
+	            return "redirect:/admin/profile";
+	        }
 
-			return "redirect:/admin/profile";
-		}
+	        try {
+	            UserDtls updated = userService.updateUserProfile(user, imageFile);
+
+	            if (updated == null) {
+	                redirectAttrs.addFlashAttribute("errorMsg", "Profile update failed.");
+	            } else {
+	                redirectAttrs.addFlashAttribute("succMsg",
+	                        "Profile updated successfully.");
+	            }
+
+	        } catch (Exception ex) {
+	            // Log the exception on the server; don't expose internal details to users.
+	            redirectAttrs.addFlashAttribute("errorMsg",
+	                    "Error updating profile. Please try again.");
+	        }
+
+	        return "redirect:/admin/profile";
+	    }
 
 		@PostMapping("/change-password")
 		public String changePassword(@RequestParam String currentPassword,

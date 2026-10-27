@@ -61,11 +61,16 @@
 								</div>
 
 								<!-- show existing image (guarded) -->
+								
 								<div th:if="${category.imageName != null and !category.imageName.isEmpty()}">
-									<img th:src="@{/uploads/category_img/{img}(img=${category.imageName})}"
+
+									<img th:src="${#strings.startsWith(category.imageName, 'http') ? category.imageName : '/uploads/category_img/' + category.imageName}"
 										th:alt="${category.name}" width="100" height="100"
-										style="object-fit: cover; margin-bottom: 8px;">
+										style="object-fit: cover; margin-bottom: 8px;"
+										onerror="this.onerror=null; this.src='/uploads/category_img/default.jpg';">
+
 								</div>
+								
 
 								<button type="submit" class="btn btn-primary col-md-12 mt-2">Update</button>
 							</form>

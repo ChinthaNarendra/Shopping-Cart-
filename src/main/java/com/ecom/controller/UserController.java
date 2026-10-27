@@ -298,42 +298,53 @@ public class UserController {
 
 	// inside com.ecom.controller.UserController
 	@PostMapping("/update-profile")
-	public String updateProfile(@ModelAttribute("user") UserDtls user,
-			@RequestParam(name = "imageFile", required = false) MultipartFile imageFile, Principal principal,
-			RedirectAttributes redirectAttrs) {
+	public String updateProfile(
+	        @ModelAttribute("user") UserDtls user,
+	        @RequestParam(name = "imageFile", required = false) MultipartFile imageFile,
+	        Principal principal,
+	        RedirectAttributes redirectAttrs) {
 
-		// require login
-		if (principal == null) {
-			redirectAttrs.addFlashAttribute("errorMsg", "You must be logged in to update profile.");
-			return "redirect:/login";
-		}
+	    if (principal == null) {
+	        redirectAttrs.addFlashAttribute(
+	                "errorMsg", "You must be logged in to update profile.");
+	        return "redirect:/login";
+	    }
 
-		String loggedEmail = principal.getName();
-		UserDtls loggedUser = userService.getUserByEmail(loggedEmail);
-		if (loggedUser == null) {
-			redirectAttrs.addFlashAttribute("errorMsg", "User not found.");
-			return "redirect:/login";
-		}
+	    String loggedEmail = principal.getName();
+	    UserDtls loggedUser = userService.getUserByEmail(loggedEmail);
 
-		// ensure user.id belongs to logged in user (prevents tampering)
-		if (user.getId() == null || !user.getId().equals(loggedUser.getId())) {
-			redirectAttrs.addFlashAttribute("errorMsg", "Invalid update request.");
-			return "redirect:/user/profile";
-		}
+	    if (loggedUser == null) {
+	        redirectAttrs.addFlashAttribute("errorMsg", "User not found.");
+	        return "redirect:/login";
+	    }
 
-		try {
-			UserDtls updated = userService.updateUserProfile(user, imageFile);
-			if (updated == null) {
-				redirectAttrs.addFlashAttribute("errorMsg", "Profile update failed.");
-			} else {
-				redirectAttrs.addFlashAttribute("succMsg", "Profile updated successfully.");
-			}
-		} catch (Exception ex) {
-			// log ex in real app
-			redirectAttrs.addFlashAttribute("errorMsg", "Error updating profile: " + ex.getMessage());
-		}
+	    // Prevent modifying another user's profile
+	    if (user.getId() == null
+	            || !user.getId().equals(loggedUser.getId())) {
 
-		return "redirect:/user/profile";
+	        redirectAttrs.addFlashAttribute(
+	                "errorMsg", "Invalid update request.");
+	        return "redirect:/user/profile";
+	    }
+
+	    try {
+	        UserDtls updated = userService.updateUserProfile(user, imageFile);
+
+	        if (updated == null) {
+	            redirectAttrs.addFlashAttribute(
+	                    "errorMsg", "Profile update failed.");
+	        } else {
+	            redirectAttrs.addFlashAttribute(
+	                    "succMsg", "Profile updated successfully.");
+	        }
+
+	    } catch (Exception ex) {
+	        // Log the exception on the server for debugging.
+	        redirectAttrs.addFlashAttribute(
+	                "errorMsg", "Error updating profile. Please try again.");
+	    }
+
+	    return "redirect:/user/profile";
 	}
 
 	@PostMapping("/change-password")
